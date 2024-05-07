@@ -132,10 +132,10 @@ STATIC_URL = 'static/'
 MEDIA_URL = "media/"
 AUTH_USER_MODEL = 'WeddingApp.UserProfile'
 
-# Make sure to replace the following values with your actual email credentials
-EMAIL_USER = 'ankitralawata20218@gmail.com'
-EMAIL_PASS = 'jtsj mgbj ewzq ktvl'
-EMAIL_FROM = 'ankitralawata20218@gmail.com'
+# Or directly setting them
+os.environ['EMAIL_USER'] = 'ankitralawata20218@gmail.com'
+os.environ['EMAIL_PASS'] = 'hxnf innv vflw uopk'
+os.environ['EMAIL_FROM'] = 'ankitralawata20218@gmail.com'
 
 
 # Email Configuration
