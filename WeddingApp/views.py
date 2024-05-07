@@ -48,6 +48,7 @@ from WeddingApp.pagination import MyPageNumberPagination
 class AllUserProfileView(APIView):
     renderer_classes = [UserProfileRenderer]
     permission_classes = [IsSuperuser]
+    authentication_classes = [JWTAuthentication]
     
     def get(self, request, pk=None):
         if pk is not None:
@@ -71,6 +72,8 @@ class AllUserProfileView(APIView):
 class UserProfileView(APIView):
     renderer_classes = [UserProfileRenderer]
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
     def get(self, request, formate=None):
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data, status = status.HTTP_200_OK)
