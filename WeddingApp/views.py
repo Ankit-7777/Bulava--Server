@@ -109,6 +109,7 @@ class UserLoginView(APIView):
 
 class LogoutUserView(APIView):
     renderer_classes = [UserProfileRenderer]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
         django_logout(request)  # Clear the session
@@ -119,6 +120,7 @@ class LogoutUserView(APIView):
 class UserUpdateView(APIView):
     renderer_classes=[UserProfileRenderer]
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get_object(self, pk):
         try:
             return UserProfile.objects.get(pk=pk)
@@ -144,6 +146,7 @@ class UserUpdateView(APIView):
 class UserChangePasswordView(APIView):
     renderer_classes=[UserProfileRenderer]
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     
     def post(self, request, formate=None):
         serializer = UserChangePasswordSerializer(data=request.data, context={'request': request})
@@ -173,6 +176,7 @@ class UserPasswordResetView(APIView):
 #Category Apis
 class CategoryViewSet(viewsets.ViewSet):
     renderer_classes = [UserProfileRenderer]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsSuperuser]
     pagination_class = MyPageNumberPagination
 
@@ -235,6 +239,7 @@ class CategoryViewSet(viewsets.ViewSet):
 class CoverImageViewSet(viewsets.ViewSet):
     renderer_classes = [UserProfileRenderer]
     permission_classes = [IsSuperuser]
+    authentication_classes = [JWTAuthentication]
     pagination_class = MyPageNumberPagination
 
     def list(self, request):

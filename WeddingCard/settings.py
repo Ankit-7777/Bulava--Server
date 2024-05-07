@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -130,18 +129,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
-
 MEDIA_URL = "media/"
-
-EMAIL_URL = 'smtp.gmail.com'
-EMAIL_PORT = '587'
-EMAIL_HOST_USER = 'ankit.kumawat@rvjtech.net'
-EMAIL_HOST_PASSWORD = 'pzegwzvnggobhbnm'
-EMAIL_USE_TLS = True
-
 AUTH_USER_MODEL = 'WeddingApp.UserProfile'
 
+# Make sure to replace the following values with your actual email credentials
+EMAIL_USER = 'ankitralawata20218@gmail.com'
+EMAIL_PASS = 'jtsj mgbj ewzq ktvl'
+EMAIL_FROM = 'ankitralawata20218@gmail.com'
 
 
 # Email Configuration
