@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event, BirthdayParty, WeddingCard, Guest, RSVP, Vendor, Category,CoverImage
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage, BirthdayParty, Wedding, InaugurationEvent
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -39,17 +39,64 @@ class CoverImageAdmin(admin.ModelAdmin):
     search_fields = ('image',)
     ordering = ('image',)
 
-@admin.register(BirthdayParty)
-class BirthdayPartyAdmin(admin.ModelAdmin):
-    list_display = ('description', 'date', 'start_time', 'end_time', 'venue', 'is_published', 'created_at', 'updated_at', 'celebrant_name', 'age', 'theme', 'guest_of_honor')
-    list_filter = ('date', 'is_published')
-    search_fields = ('description', 'venue', 'celebrant_name', 'theme', 'guest_of_honor')
 
-@admin.register(WeddingCard)
-class WeddingCardAdmin(admin.ModelAdmin):
-    list_display = ('description', 'date', 'start_time', 'end_time', 'venue', 'is_published', 'created_at', 'updated_at', 'bride_name', 'groom_name', 'wedding_date', 'RSVP_email')
-    list_filter = ('date', 'is_published')
-    search_fields = ('description', 'venue', 'bride_name', 'groom_name')
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('id','title', 'event_type', 'date', 'start_time', 'end_time', 'venue', 'is_published')
+    list_filter = ('event_type', 'date', 'is_published')
+    search_fields = ['title', 'description', 'venue']
+    date_hierarchy = 'date'
+    ordering = ('date',)
+    readonly_fields = ('created_at', 'updated_at')
+
+@admin.register(BirthdayParty)
+class BirthdayPartyAdmin(EventAdmin):
+    list_display = EventAdmin.list_display + ('celebrant_name', 'age', 'theme', 'max_guests')
+    fieldsets = (
+        (None, {
+            'fields': ('event_type', 'title', 'description', 'date', 'start_time', 'end_time', 'venue', 'is_published')
+        }),
+        ('Additional Information', {
+            'fields': ('celebrant_name', 'age', 'theme', 'RSVP_email', 'max_guests','gift_registry_link', 'dress_code')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
+@admin.register(Wedding)
+class WeddingAdmin(EventAdmin):
+    list_display = EventAdmin.list_display + ('bride_name', 'groom_name', 'wedding_date', 'rsvp_deadline')
+    fieldsets = (
+        (None, {
+            'fields': ('event_type', 'title', 'description', 'date', 'start_time', 'end_time', 'venue', 'is_published')
+        }),
+        ('Wedding Information', {
+            'fields': ('bride_name', 'groom_name', 'wedding_date', 'RSVP_email',  'max_guests', 'rsvp_deadline', 'wedding_registry_link')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
+@admin.register(InaugurationEvent)
+class InaugurationEventAdmin(EventAdmin):
+    list_display = EventAdmin.list_display + ('guest_of_honor', 'inauguration_date', 'venue_address')
+    fieldsets = (
+        (None, {
+            'fields': ('event_type', 'title', 'description', 'date', 'start_time', 'end_time', 'venue', 'is_published')
+        }),
+        ('Inauguration Information', {
+            'fields': ('guest_of_honor', 'organizer_name', 'organizer_contact', 'max_guests',  'inauguration_date', 'venue_address')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
 
 @admin.register(Guest)
 class GuestAdmin(admin.ModelAdmin):

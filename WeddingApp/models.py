@@ -6,6 +6,7 @@ from django.core.validators import FileExtensionValidator
 from PIL import Image
 from django.core.exceptions import ValidationError
 
+
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password=None, confirm_password=None, **extra_fields):
         if not email:
@@ -66,8 +67,8 @@ class CoverImage(models.Model):
     image = models.ImageField(upload_to='covers/', blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])])
 
 class Event(models.Model):
-    event_creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='created_events_user')
-    event_category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events_category')
+    id = models.AutoField(_("ID"), primary_key=True)
+    event_type = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events_category')
     title = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateField()
@@ -84,19 +85,27 @@ class BirthdayParty(Event):
     celebrant_name = models.CharField(max_length=100)
     age = models.PositiveIntegerField()
     theme = models.CharField(max_length=100)
-    guest_of_honor = models.CharField(max_length=100)
+    RSVP_email = models.EmailField()
+    max_guests = models.PositiveIntegerField(default=50)
+    gift_registry_link = models.URLField(max_length=200, blank=True, null=True)
+    dress_code = models.CharField(max_length=50, blank=True, null=True)
 
-class WeddingCard(Event):
+class Wedding(Event):
     bride_name = models.CharField(max_length=100)
     groom_name = models.CharField(max_length=100)
     wedding_date = models.DateField()
     RSVP_email = models.EmailField()
-    message = models.TextField()
-    cover_photo = models.ImageField(upload_to='covers/', blank=True, null=True)
-    rsvp_deadline = models.DateField()
-   
-    def __str__(self):
-        return f"{self.bride_name} & {self.groom_name}'s Wedding Invitation"
+    max_guests = models.PositiveIntegerField(default=100)
+    rsvp_deadline = models.DateField(null=True, blank=True)
+    wedding_registry_link = models.URLField(max_length=200, blank=True, null=True)
+
+class InaugurationEvent(Event):
+    guest_of_honor = models.CharField(max_length=100)
+    organizer_name = models.CharField(max_length=100)
+    organizer_contact = models.CharField(max_length=20)
+    max_guests = models.PositiveIntegerField(default=200)
+    inauguration_date = models.DateField()
+    venue_address = models.CharField(max_length=200)
 
 class Guest(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='guests')
