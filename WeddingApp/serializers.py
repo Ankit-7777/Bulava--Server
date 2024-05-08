@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from WeddingApp.models import UserProfile, Category, CoverImage
+from WeddingApp.models import UserProfile, Category, CoverImage, Event, BirthdayParty, Wedding, InaugurationEvent
 from rest_framework.validators import ValidationError
 from .utils import Utils
 from rest_framework.validators import UniqueValidator
@@ -9,8 +9,10 @@ from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.password_validation import validate_password
 from django.db.models.functions import Lower
+from django.utils import timezone
+from datetime import date
 
-#UserProfile Serializers
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
@@ -149,7 +151,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-#CategorySerializer
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -169,18 +170,10 @@ class CategorySerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def retrieve(self, category_name):
-        return Category.objects.get(category_name__iexact=category_name)
-
-    def destroy(self, instance):
-        instance.delete()
-        return instance
-
-#CoverImages Serializer
 class CoverImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverImage
-        fields = ['id', 'image']
+        fields = '__all__'
     
     def validate_image(self, value):
         """
@@ -206,24 +199,157 @@ class CoverImageSerializer(serializers.ModelSerializer):
         Retrieve and return a CoverImage instance, given the validated data.
         """
         return CoverImage.objects.get(pk=pk)
-    
-    def get(self, instance):
-        """
-        Retrieve and return a CoverImage instance, given the validated data.
-        """
-        return CoverImage.objects.get(pk=pk)
+           
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
 
-    def update(self, instance, validated_data):
-        """
-        Update and return an existing CoverImage instance, given the validated data.
-        """
-        instance.image = validated_data.get('image', instance.image)
-        instance.save()
-        return instance
+    def validate(self, attrs):
+        event_start_time = attrs.get('event_start_time')
+        event_end_time = attrs.get('event_end_time')
 
+        # Validate that the event start time is before the event end time
+        if event_start_time and event_end_time and event_start_time >= event_end_time:
+            raise serializers.ValidationError("Event start time must be before event end time.")
+
+        # Validate that the difference between start and end time is at least one hour
+        if event_start_time and event_end_time:
+            time_diff = event_end_time - event_start_time
+            if time_diff.seconds < 3600:  # 3600 seconds = 1 hour
+                raise serializers.ValidationError("The event duration must be at least one hour.")
+
+        # Validate that the event date is not before the creation date
+        if attrs.get('event_date') and attrs.get('event_date') < attrs.get('created_at').date():
+            raise serializers.ValidationError("Event date cannot be before the creation date.")
+        
+        return attrs
+      
+class BirthdayPartySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BirthdayParty
+        fields = '__all__'
+
+    def validate(self, attrs):
+        errors = {}
+
+        event_date = attrs.get('event_date')
+        event_start_time = attrs.get('event_start_time')
+        event_end_time = attrs.get('event_end_time')
+        created_at = attrs.get('created_at')
+
+        # Validate event date is in the future
+        if event_date and event_date < timezone.now().date():
+            errors['event_date'] = ['Event date must be in the future.']
+
+        # Validate event start time is before end time
+        if event_start_time and event_end_time:
+            start_datetime = timezone.datetime.combine(timezone.now().date(), event_start_time)
+            end_datetime = timezone.datetime.combine(timezone.now().date(), event_end_time)
+            if start_datetime >= end_datetime:
+                errors['event_start_time'] = ['Event start time must be before end time.']
+
+        # Validate event duration is at least one hour
+        if event_start_time and event_end_time:
+            start_datetime = timezone.datetime.combine(timezone.now().date(), event_start_time)
+            end_datetime = timezone.datetime.combine(timezone.now().date(), event_end_time)
+            time_diff = (end_datetime - start_datetime).total_seconds()
+            if time_diff < 3600:  # 3600 seconds = 1 hour
+                errors['event_end_time'] = ['The event duration must be at least one hour.']
+
+        # Validate event date is not before creation date
+        if event_date and created_at and event_date < created_at.date():
+            errors['event_date'] = ['Event date cannot be before the creation date.']
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return attrs 
     
-    
-    def destroy(self, instance):
-        instance.delete()
-        return instance
-    
+class WeddingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wedding
+        fields = '__all__'
+
+    def validate(self, data):
+        errors = {}
+        
+        bride_birth_date = data.get('bride_birth_date')
+        groom_birth_date = data.get('groom_birth_date')
+        event_date = data.get('event_date')
+        event_start_time = data.get('event_start_time')
+        event_end_time = data.get('event_end_time')
+        created_at = data.get('created_at')
+        
+
+        if bride_birth_date:
+            bride_age = self.calculate_age(bride_birth_date)
+            if bride_age < 18:
+                errors['bride_birth_date'] = f"Bride must be at least 18 years old. (Current age: {bride_age})"
+
+        if groom_birth_date:
+            groom_age = self.calculate_age(groom_birth_date)
+            if groom_age < 21:
+                errors['groom_birth_date'] = f"Groom must be at least 21 years old. (Current age: {groom_age})"
+
+        # Validate event date is in the future
+        if event_date and event_date < timezone.now().date():
+            errors['event_date'] = ['Event date must be in the future.']
+
+        # Validate event start time is before end time
+        if event_start_time and event_end_time:
+            start_datetime = timezone.datetime.combine(timezone.now().date(), event_start_time)
+            end_datetime = timezone.datetime.combine(timezone.now().date(), event_end_time)
+            if start_datetime >= end_datetime:
+                errors['event_start_time'] = ['Event start time must be before end time.']
+
+        # Validate event duration is at least one hour
+        if event_start_time and event_end_time:
+            start_datetime = timezone.datetime.combine(timezone.now().date(), event_start_time)
+            end_datetime = timezone.datetime.combine(timezone.now().date(), event_end_time)
+            time_diff = (end_datetime - start_datetime).total_seconds()
+            if time_diff < 3600:  # 3600 seconds = 1 hour
+                errors['event_end_time'] = ['The event duration must be at least one hour.']
+
+        # Validate event date is not before creation date
+        if event_date and created_at and event_date < created_at.date():
+            errors['event_date'] = ['Event date cannot be before the creation date.']
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return data
+
+    def calculate_age(self, birth_date):
+        today = date.today()
+        return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))   
+
+class InaugurationEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InaugurationEvent
+        fields = '__all__'
+
+    def validate(self, attrs):
+        errors = {}
+        
+        organizer_contact = attrs.get('organizer_contact')
+        event_date = attrs.get('event_date')
+        event_start_time = attrs.get('event_start_time')
+        event_end_time = attrs.get('event_end_time')
+        created_at = attrs.get('created_at') 
+
+        if organizer_contact and len(organizer_contact) < 10:
+            raise serializers.ValidationError("Organizer contact number must be at least 10 characters.")
+        
+        # Validate event date is in the future
+        if event_date and event_date < timezone.now().date():
+            errors['event_date'] = ['Event date must be in the future.']
+        
+        # Validate that the event start time is before the event end time
+        if event_start_time and event_end_time and event_start_time >= event_end_time:
+            raise serializers.ValidationError("Event start time must be before event end time.")
+        
+        return attrs
+
+
+
