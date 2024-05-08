@@ -26,7 +26,7 @@ class UserProfileAdmin(UserAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id','category_name',)
+    list_display = ('category_name',)
     list_filter = ('category_name',)
     search_fields = ('category_name',)
     ordering = ('category_name',)
@@ -34,20 +34,18 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(CoverImage)
 class CoverImageAdmin(admin.ModelAdmin):
     list_per_page = 10
-    list_display = ('id','image',)
-    list_filter = ('image',)
-    search_fields = ('image',)
-    ordering = ('image',)
-
-
+    list_display = ('id','image','event_type')
+    list_filter = ('image','event_type')
+    search_fields = ('image','event_type')
+    ordering = ('image','event_type')
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id','title', 'event_type', 'date', 'start_time', 'end_time', 'venue', 'is_published')
-    list_filter = ('event_type', 'date', 'is_published')
-    search_fields = ['title', 'description', 'venue']
-    date_hierarchy = 'date'
-    ordering = ('date',)
+    list_display = ('id', 'title', 'event_type',  'event_start_time', 'event_end_time', 'venue_address', 'is_published')
+    list_filter = ('event_type', 'event_date', 'is_published')
+    search_fields = ['title', 'description', 'venue_address']
+    date_hierarchy = 'event_date'
+    ordering = ('event_date',)
     readonly_fields = ('created_at', 'updated_at')
 
 @admin.register(BirthdayParty)
@@ -55,46 +53,55 @@ class BirthdayPartyAdmin(EventAdmin):
     list_display = EventAdmin.list_display + ('celebrant_name', 'age', 'theme', 'max_guests')
     fieldsets = (
         (None, {
-            'fields': ('event_type', 'title', 'description', 'date', 'start_time', 'end_time', 'venue', 'is_published')
+            'fields': ('title', 'event_type', 'description')
+        }),
+        ('Event Details', {
+            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_address', 'venue_pin_code', 'is_published', 'max_guests', 'theme')
         }),
         ('Additional Information', {
-            'fields': ('celebrant_name', 'age', 'theme', 'RSVP_email', 'max_guests','gift_registry_link', 'dress_code')
+            'fields': ('celebrant_name', 'age', 'gift_registry_link', 'dress_code')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',),
+            'classes': ('collapse',)
         }),
     )
 
 @admin.register(Wedding)
 class WeddingAdmin(EventAdmin):
-    list_display = EventAdmin.list_display + ('bride_name', 'groom_name', 'wedding_date', 'rsvp_deadline')
+    list_display = EventAdmin.list_display + ('bride_name', 'groom_name', 'event_date','is_published')
     fieldsets = (
         (None, {
-            'fields': ('event_type', 'title', 'description', 'date', 'start_time', 'end_time', 'venue', 'is_published')
+            'fields': ('title', 'event_type', 'description')
+        }),
+        ('Event Details', {
+            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_address', 'venue_pin_code', 'is_published')
         }),
         ('Wedding Information', {
-            'fields': ('bride_name', 'groom_name', 'wedding_date', 'RSVP_email',  'max_guests', 'rsvp_deadline', 'wedding_registry_link')
+            'fields': ('bride_name', 'groom_name', 'bride_mother_name', 'bride_father_name', 'groom_mother_name', 'groom_father_name', 'wedding_registry_link', 'max_guests')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',),
+            'classes': ('collapse',)
         }),
     )
 
 @admin.register(InaugurationEvent)
 class InaugurationEventAdmin(EventAdmin):
-    list_display = EventAdmin.list_display + ('guest_of_honor', 'inauguration_date', 'venue_address')
+    list_display = EventAdmin.list_display + ('guest_of_honor','organizer_name','organizer_contact',)
     fieldsets = (
         (None, {
-            'fields': ('event_type', 'title', 'description', 'date', 'start_time', 'end_time', 'venue', 'is_published')
+            'fields': ('title', 'event_type', 'description')
+        }),
+        ('Event Details', {
+            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_address', 'venue_pin_code', 'is_published')
         }),
         ('Inauguration Information', {
-            'fields': ('guest_of_honor', 'organizer_name', 'organizer_contact', 'max_guests',  'inauguration_date', 'venue_address')
+            'fields': ('guest_of_honor', 'organizer_name', 'organizer_contact',  'max_guests')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',),
+            'classes': ('collapse',)
         }),
     )
 

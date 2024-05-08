@@ -18,7 +18,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.models import TokenUser
 from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
-from WeddingApp.models import UserProfile,Category, CoverImage
+from WeddingApp.models import UserProfile,Category, CoverImage, BirthdayParty, Wedding, InaugurationEvent
 from WeddingApp.permissions import IsSuperuser
 from django.core.mail import send_mail
 from django.http import Http404
@@ -32,6 +32,9 @@ from WeddingApp.serializers import (
         UserPasswordResetSerializer,
         CategorySerializer,
         CoverImageSerializer,
+        BirthdayPartySerializer,
+        WeddingSerializer,
+        InaugurationEventSerializer,
 )
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -43,7 +46,7 @@ from WeddingApp.pagination import MyPageNumberPagination
 
 
 
-#UserProfile Apis
+
 
 class AllUserProfileView(APIView):
     renderer_classes = [UserProfileRenderer]
@@ -176,52 +179,45 @@ class UserPasswordResetView(APIView):
             return Response({'msg':'Password Reset Successfully'}, status= status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#Category Apis
-class CategoryViewSet(viewsets.ViewSet):
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsSuperuser]
     pagination_class = MyPageNumberPagination
 
-    def list(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def create(self, request):
-        serializer = CategorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Category created successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({"message": "Category created successfully", "data": serializer.data}, status=status.HTTP_201_CREATED, headers=headers)
+
     def retrieve(self, request, pk=None):
-        try:
-            category = Category.objects.get(id=pk)
-            serializer = CategorySerializer(category)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Category.DoesNotExist:
-            return Response({"message": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-    
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def update(self, request, pk=None):
-        try:
-            category = Category.objects.get(id=pk)
-            serializer = CategorySerializer(category, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({"message": "Category updated successfully"}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Category.DoesNotExist:
-            return Response({"message": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-    
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({"message": "Category updated successfully", "data": serializer.data})
+
+    def partial_update(self, request, pk=None):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({"message": "Category partially updated successfully", "data": serializer.data})
+
     def destroy(self, request, pk=None):
-        try:
-            category = Category.objects.get(id=pk)
-            category.delete()
-            return Response({"message": "Category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-        except Category.DoesNotExist:
-            return Response({"message": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-    
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=False, methods=['GET'], name='category_name_search')
     def search(self, request):
         search_str = request.query_params.get('search_str')
@@ -238,33 +234,19 @@ class CategoryViewSet(viewsets.ViewSet):
         serializer = CategorySerializer(queryset, many=True)
         return Response({"message": "Categories found successfully", "data": serializer.data}, status=status.HTTP_200_OK)
 
-#Cover Image Apis
-class CoverImageViewSet(viewsets.ViewSet):
+class CoverImageViewSet(viewsets.ModelViewSet):
+    queryset = CoverImage.objects.all()
+    serializer_class = CoverImageSerializer
     renderer_classes = [UserProfileRenderer]
-    permission_classes = [IsSuperuser]
     authentication_classes = [JWTAuthentication]
+    permission_classes = [IsSuperuser]
     pagination_class = MyPageNumberPagination
 
-    def list(self, request):
-        """
-        Retrieve a list of all CoverImage instances.
-        """
-        cover_images = CoverImage.objects.all()
-        serializer = CoverImageSerializer(cover_images, many=True)
-        return Response(serializer.data)
-
-    def create(self, request):
-        serializer = CoverImageSerializer(data=request.data)
-        
-        # Check if the image already exists
-        if 'image' in request.data:
-            existing_images = CoverImage.objects.filter(image=request.data['image'])
-            if existing_images.exists():
-                return Response({"error": "Image already exists"}, status=status.HTTP_400_BAD_REQUEST)
-        
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Cover image created successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Cover image created successfully", "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, pk=None):
@@ -281,7 +263,18 @@ class CoverImageViewSet(viewsets.ViewSet):
             serializer = CoverImageSerializer(cover_image, data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response({"message": "Cover image updated successfully"}, status=status.HTTP_200_OK)
+                return Response({"message": "Cover image updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except CoverImage.DoesNotExist:
+            return Response({"message": "Cover image not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def partial_update(self, request, pk=None):
+        try:
+            cover_image = CoverImage.objects.get(id=pk)
+            serializer = CoverImageSerializer(cover_image, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Cover image partially updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except CoverImage.DoesNotExist:
             return Response({"message": "Cover image not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -293,3 +286,163 @@ class CoverImageViewSet(viewsets.ViewSet):
             return Response({"message": "Cover image deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         except CoverImage.DoesNotExist:
             return Response({"message": "Cover image not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class BirthdayPartyViewSet(viewsets.ModelViewSet):
+    renderer_classes = [UserProfileRenderer]
+    permission_classes = [IsSuperuser]
+    authentication_classes = [JWTAuthentication]
+    pagination_class = MyPageNumberPagination
+    queryset = BirthdayParty.objects.all()
+    serializer_class = BirthdayPartySerializer
+    
+    
+    def retrieve(self, request, pk=None):
+        try:
+            birthday_party = self.get_queryset().get(id=pk)
+            serializer = BirthdayPartySerializer(birthday_party)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except BirthdayParty.DoesNotExist:
+            return Response({"message": "Birthday party not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Birthday party created successfully", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            serializer = BirthdayPartySerializer(instance, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Birthday party updated successfully", "data": serializer.data})
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except BirthdayParty.DoesNotExist:
+            return Response({"message": "Birthday party not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def partial_update(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            serializer = BirthdayPartySerializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Birthday party partially updated successfully", "data": serializer.data})
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except BirthdayParty.DoesNotExist:
+            return Response({"message": "Birthday party not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            instance.delete()
+            return Response({"message": "Birthday party deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except BirthdayParty.DoesNotExist:
+            return Response({"message": "Birthday party not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class WeddingEventViewSet(viewsets.ModelViewSet):
+    renderer_classes = [UserProfileRenderer]
+    permission_classes = [IsSuperuser]
+    authentication_classes = [JWTAuthentication]
+    pagination_class = MyPageNumberPagination
+    queryset = Wedding.objects.all()
+    serializer_class = WeddingSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Wedding event created successfully", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def retrieve(self, request, pk):
+        try:
+            wedding = self.get_queryset().get(id=pk)
+            serializer = WeddingSerializer(wedding)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Wedding.DoesNotExist:
+            return Response({"message": "Wedding event not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def update(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            serializer = self.get_serializer(instance, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Wedding event updated successfully", "data": serializer.data})
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Wedding.DoesNotExist:
+            return Response({"message": "Wedding event not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def partial_update(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Wedding event partially updated successfully", "data": serializer.data})
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Wedding.DoesNotExist:
+            return Response({"message": "Wedding event not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def destroy(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            instance.delete()
+            return Response({"message": "Wedding event deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Wedding.DoesNotExist:
+            return Response({"message": "Wedding event not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class InaugurationEventViewSet(viewsets.ModelViewSet):
+    renderer_classes = [UserProfileRenderer]
+    permission_classes = [IsSuperuser]
+    authentication_classes = [JWTAuthentication]
+    pagination_class = MyPageNumberPagination
+    queryset = InaugurationEvent.objects.all()
+    serializer_class = InaugurationEventSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Inauguration event created successfully", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def retrieve(self, request, pk):
+        try:
+            inauguration_event = self.get_queryset().get(id=pk)
+            serializer = InaugurationEventSerializer(inauguration_event)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except InaugurationEvent.DoesNotExist:
+            return Response({"message": "Inauguration event not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def update(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            serializer = self.get_serializer(instance, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Inauguration event updated successfully", "data": serializer.data})
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except InaugurationEvent.DoesNotExist:
+            return Response({"message": "Inauguration event not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def partial_update(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Inauguration event partially updated successfully", "data": serializer.data})
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except InaugurationEvent.DoesNotExist:
+            return Response({"message": "Inauguration event not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def destroy(self, request, pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            instance.delete()
+            return Response({"message": "Inauguration event deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except InaugurationEvent.DoesNotExist:
+            return Response({"message": "Inauguration event not found"}, status=status.HTTP_404_NOT_FOUND)

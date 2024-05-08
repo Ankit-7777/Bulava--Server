@@ -56,7 +56,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         self.save()
 
 class Category(models.Model):
-    id = models.AutoField(_("ID"), primary_key=True, unique=True)
     category_name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -65,17 +64,22 @@ class Category(models.Model):
 class CoverImage(models.Model):
     id = models.AutoField(_("ID"), primary_key=True, unique=True)
     image = models.ImageField(upload_to='covers/', blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])])
+    event_type = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events_category_type')
 
 class Event(models.Model):
     id = models.AutoField(_("ID"), primary_key=True)
     event_type = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events_category')
+    RSVP_email = models.EmailField()
     title = models.CharField(max_length=255)
-    description = models.TextField()
-    date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    venue = models.CharField(max_length=200)
+    description = models.TextField(max_length=255, blank= True, null=True)
+    event_date = models.DateField()
+    event_start_time = models.TimeField()
+    event_end_time = models.TimeField()
+    venue_address = models.CharField(max_length=200)
+    venue_pin_code = models.CharField(max_length=6)
     is_published = models.BooleanField(default=False)
+    max_guests = models.PositiveIntegerField(default=100)
+    theme = models.CharField(max_length=100, blank= True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -84,28 +88,24 @@ class Event(models.Model):
 class BirthdayParty(Event):
     celebrant_name = models.CharField(max_length=100)
     age = models.PositiveIntegerField()
-    theme = models.CharField(max_length=100)
-    RSVP_email = models.EmailField()
-    max_guests = models.PositiveIntegerField(default=50)
     gift_registry_link = models.URLField(max_length=200, blank=True, null=True)
     dress_code = models.CharField(max_length=50, blank=True, null=True)
 
 class Wedding(Event):
-    bride_name = models.CharField(max_length=100)
-    groom_name = models.CharField(max_length=100)
-    wedding_date = models.DateField()
-    RSVP_email = models.EmailField()
-    max_guests = models.PositiveIntegerField(default=100)
-    rsvp_deadline = models.DateField(null=True, blank=True)
+    bride_name = models.CharField(max_length=100, blank= False)
+    groom_name = models.CharField(max_length=100, blank= False)
+    bride_mother_name = models.CharField(max_length=100, blank= False)
+    bride_father_name = models.CharField(max_length=100, blank= False)
+    groom_mother_name = models.CharField(max_length=100, blank= False)
+    groom_father_name = models.CharField(max_length=100, blank= False)
     wedding_registry_link = models.URLField(max_length=200, blank=True, null=True)
+    bride_birth_date = models.DateField(blank= False)
+    groom_birth_date = models.DateField(blank= False)
 
 class InaugurationEvent(Event):
     guest_of_honor = models.CharField(max_length=100)
     organizer_name = models.CharField(max_length=100)
     organizer_contact = models.CharField(max_length=20)
-    max_guests = models.PositiveIntegerField(default=200)
-    inauguration_date = models.DateField()
-    venue_address = models.CharField(max_length=200)
 
 class Guest(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='guests')
