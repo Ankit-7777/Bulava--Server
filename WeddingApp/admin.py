@@ -69,7 +69,7 @@ class BirthdayPartyAdmin(EventAdmin):
 
 @admin.register(Wedding)
 class WeddingAdmin(EventAdmin):
-    list_display = EventAdmin.list_display + ('bride_name', 'groom_name', 'event_date','is_published')
+    list_display = EventAdmin.list_display + ('bride_name', 'groom_name', 'event_date',)
     fieldsets = (
         (None, {
             'fields': ('title', 'event_type', 'description')
