@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage, BirthdayParty, Wedding, InaugurationEvent
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -26,7 +26,7 @@ class UserProfileAdmin(UserAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('category_name',)
+    list_display = ('id','category_name',)
     list_filter = ('category_name',)
     search_fields = ('category_name',)
     ordering = ('category_name',)
@@ -41,63 +41,30 @@ class CoverImageAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'event_type',  'event_start_time', 'event_end_time', 'venue_address', 'is_published')
-    list_filter = ('event_type', 'event_date', 'is_published')
-    search_fields = ['title', 'description', 'venue_address']
-    date_hierarchy = 'event_date'
-    ordering = ('event_date',)
+    list_display = ('id', 'title', 'event_category', 'event_date', 'event_start_time', 'event_end_time', 'is_published')
+    list_filter = ('event_category', 'is_published', 'event_date')
+    search_fields = ('title', 'description', 'venue_name', 'venue_address')
     readonly_fields = ('created_at', 'updated_at')
-
-@admin.register(BirthdayParty)
-class BirthdayPartyAdmin(EventAdmin):
-    list_display = EventAdmin.list_display + ('celebrant_name', 'age', 'theme', 'max_guests')
     fieldsets = (
         (None, {
-            'fields': ('title', 'event_type', 'description')
+            'fields': ('event_category','title', 'description')
         }),
         ('Event Details', {
-            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_address', 'venue_pin_code', 'is_published', 'max_guests', 'theme')
+            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_name', 'venue_address', 'venue_pin_code')
+        }),
+        ('Contact Information', {
+            'fields': ('email', 'phone_number', 'organizer_name', 'guest_of_honor')
         }),
         ('Additional Information', {
-            'fields': ('celebrant_name', 'age', 'gift_registry_link', 'dress_code')
+            'fields': ('max_guests', 'theme', 'dress_code', 'gift_sending_link', 'is_published')
         }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
+        ('Wedding Specific', {
+            'fields': ('bride_name', 'groom_name', 'bride_mother_name', 'bride_father_name', 'groom_mother_name', 'groom_father_name', 'bride_age', 'groom_age'),
             'classes': ('collapse',)
         }),
-    )
-
-@admin.register(Wedding)
-class WeddingAdmin(EventAdmin):
-    list_display = EventAdmin.list_display + ('bride_name', 'groom_name', 'event_date',)
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'event_type', 'description')
-        }),
-        ('Event Details', {
-            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_address', 'venue_pin_code', 'is_published')
-        }),
-        ('Wedding Information', {
-            'fields': ('bride_name', 'groom_name', 'bride_mother_name', 'bride_father_name', 'groom_mother_name', 'groom_father_name', 'wedding_registry_link', 'max_guests')
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
+        ('Birthday Specific', {
+            'fields': ('birthday_person_name', 'birthday_person_age'),
             'classes': ('collapse',)
-        }),
-    )
-
-@admin.register(InaugurationEvent)
-class InaugurationEventAdmin(EventAdmin):
-    list_display = EventAdmin.list_display + ('guest_of_honor','organizer_name','organizer_contact',)
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'event_type', 'description')
-        }),
-        ('Event Details', {
-            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_address', 'venue_pin_code', 'is_published')
-        }),
-        ('Inauguration Information', {
-            'fields': ('guest_of_honor', 'organizer_name', 'organizer_contact',  'max_guests')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
