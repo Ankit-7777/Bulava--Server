@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -90,3 +90,10 @@ class VendorAdmin(admin.ModelAdmin):
     list_filter = ('event',)
     search_fields = ('name', 'service')
 
+@admin.register(ContactUs)
+class ContactUsAdmin(admin.ModelAdmin):
+    list_per_page = 5
+    list_display = ('id','name', 'email','message')
+    list_filter = ('name',)
+    search_fields = ('name', 'email','message')
+    ordering = ('name',)
