@@ -13,7 +13,7 @@ router.register(r'contect-us', ContectUsViewSet, basename='contect-us')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('WeddingApp.urls')),
+    path('apis/',include('WeddingApp.urls')),
     path ('auth/', include('rest_framework.urls')),
     path('', include(router.urls)),
     
