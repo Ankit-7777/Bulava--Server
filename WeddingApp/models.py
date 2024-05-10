@@ -132,3 +132,9 @@ class Vendor(models.Model):
     message = models.TextField(blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
     website = models.URLField(blank=True, null=True)
+
+class ContactUs(models.Model):
+    id = models.AutoField(_("Id"),primary_key=True)
+    name = models.CharField(_("Name"), max_length=100,  null=False)
+    email = models.EmailField(_("Email"),null=False)
+    message = models.TextField(_("Message"), max_length=300,null=False)

@@ -18,7 +18,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.models import TokenUser
 from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
-from WeddingApp.models import UserProfile,Category, CoverImage,Event
+from WeddingApp.models import UserProfile,Category, CoverImage,Event,ContactUs
 from WeddingApp.permissions import IsSuperuser
 from django.core.mail import send_mail
 from django.http import Http404
@@ -33,6 +33,7 @@ from WeddingApp.serializers import (
         CategorySerializer,
         CoverImageSerializer,
         EventSerializer,
+        ContactUsSerializer,
        
 )
 
@@ -341,3 +342,34 @@ class EventViewSet(viewsets.ModelViewSet):
             return JsonResponse({"message": "Events retrieved successfully", "data": serializer.data}, status=200)
         else:
             return JsonResponse({"message": "No events found for the provided category"}, status=404)
+
+class ContectUsViewSet(viewsets.ModelViewSet):
+    renderer_classes = [UserProfileRenderer]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = MyPageNumberPagination
+    queryset = ContactUs.objects.all()
+    serializer_class = ContactUsSerializer
+    
+    def create(self, request):
+        serializer = self.get_serializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Message sent successfully", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"error":  serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def retrieve(self, request,pk):
+        try:
+            contact_us = self.get_queryset().get(id=pk)
+            serializer = ContactUsSerializer(contact_us)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ContactUs.DoesNotExist:
+            return Response({"message": "Message not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def destroy(self,request,pk=None):
+        try:
+            instance = self.get_queryset().get(id=pk)
+            instance.delete()
+            return Response({"message": "Message deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except ContactUs.DoesNotExist:
+            return Response({"message": "Message not found"}, status=status.HTTP_404_NOT_FOUND)

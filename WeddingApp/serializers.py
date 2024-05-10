@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from WeddingApp.models import UserProfile, Category, CoverImage, Event
+from WeddingApp.models import UserProfile, Category, CoverImage, Event,ContactUs
 from rest_framework.validators import ValidationError
 from .utils import Utils
 from rest_framework.validators import UniqueValidator
@@ -250,3 +250,22 @@ class EventSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return attrs
+
+class ContactUsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactUs
+        fields = '__all__'
+    
+    def validate(self, data):
+        errors = {}
+        message = data.get('message', None)
+        if not message:
+            errors['message'] = ['Message field is required.']
+        if message and len(message) <= 180:
+            errors['message'] = ['Message must be more than 30 characters.']
+        if errors:
+            raise serializers.ValidationError(errors)
+        return data
+    
+    def create(self, validated_data):
+        return ContactUs.objects.create(**validated_data)
