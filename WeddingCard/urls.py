@@ -8,11 +8,6 @@ from WeddingApp.views import (
     EventViewSet,
     ContectUsViewSet,
 )
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
-)
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
