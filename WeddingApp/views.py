@@ -121,29 +121,72 @@ class LogoutUserView(APIView):
         response.delete_cookie('token')  # Delete the token cookie
         return response
 
+# class LogoutUserView(APIView):
+#     renderer_classes = [UserProfileRenderer]
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         # Get the user's token
+#         token = request.headers.get('Authorization').split(' ')[1]
+
+#         # Check if the token is already blacklisted
+#         if BlacklistedToken.objects.filter(token=token).exists():
+#             return Response({'msg': 'Token already blacklisted'}, status=status.HTTP_200_OK)
+
+#         # Add the token to the blacklist
+#         BlacklistedToken.objects.create(token=token)
+
+#         # Clear the session
+#         django_logout(request)
+
+#         return Response({'msg': 'Logged out successfully'}, status =status.HTTP_200_OK)
+
+# class LogoutUserView(APIView):
+#     renderer_classes = [UserProfileRenderer]
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         # Get the user's token
+#         auth_header = request.headers.get('Authorization')
+#         if auth_header and 'Bearer' in auth_header:
+#             token = auth_header.split(' ')[1]
+        
+#             # Set the user's token to None in the database
+#             user = authenticate(request=request)
+#             if user:
+#                 user.auth_token = None
+#                 user.save()
+
+#             # Clear the session
+#             django_logout(request)
+
+#             return Response({'msg': 'Logged out successfully'}, status=HTTP_200_OK)
+        
+#         return Response({'error': 'Invalid Authorization header'}, status=HTTP_403_FORBIDDEN)
+
 class UserUpdateView(APIView):
     renderer_classes=[UserProfileRenderer]
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    def get_object(self, pk):
-        try:
-            return UserProfile.objects.get(pk=pk)
-        except UserProfile.DoesNotExist:
-            raise Http404
 
-    def get(self, request, pk, format=None):
-        user = self.get_object(pk)
-        serializer = UserUpdateSerializer(user)
-        return Response(serializer.data)
+    def get_object(self):
+        user = self.request.user # Accessing the user associated with the token
+        if not user:
+            raise NotFound("User not found")
+        return user
 
-    def put(self, request, pk, format=None):
-        user = self.get_object(pk)
+    def put(self, request, format=None):
+        user = self.get_object()
+
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            updated_data = serializer.data  # Retrieve updated data
             return Response({
                 'message': 'User profile updated successfully',
-                'data': serializer.data
+                'data': updated_data
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -291,7 +334,7 @@ class EventViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     pagination_class = MyPageNumberPagination
     queryset = Event.objects.all()
-    serializer = EventSerializer
+    serializer_class = EventSerializer
     
     def create(self, request):
         serializer = self.get_serializer(data = request.data)

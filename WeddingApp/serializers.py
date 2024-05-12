@@ -11,7 +11,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.db.models.functions import Lower
 from django.utils import timezone
 from datetime import date
-
+from rest_framework.exceptions import NotFound
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,7 +33,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         confirm_password = attrs.get('confirm_password')
         pattern = r"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$"
         if password != confirm_password:
-            raise serializers.ValidationError("Password Must Be Same")
+            raise serializers.ValidationError("Password and Confirm Password Must Be Same")
         elif not re.match(pattern, password):
             raise serializers.ValidationError("Password must contain at least eight characters with a digit, an uppercase letter, a lowercase letter, and a special character")
         return attrs
@@ -74,7 +74,7 @@ class UserChangePasswordSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data['new_password'] != data['confirm_new_password']:
-            raise serializers.ValidationError("The new passwords do not match.")
+            raise serializers.ValidationError("The new password and confirm new passwords do not match.")
         return data
 
     def save(self):
@@ -127,14 +127,14 @@ class UserPasswordResetSerializer(serializers.Serializer):
             id = smart_str(urlsafe_base64_decode(uid))
             user = UserProfile.objects.get(id = id)
             if not PasswordResetTokenGenerator().check_token(user,token):
-                raise ValidationErr('Token is not Valid or Expired')
+                raise ValidationError('Token is not Valid or Expired')
             user.set_password(password)
             user.save()
             return attrs  
         except DjangoUnicodeDecodeError as identifier:
             PasswordResetTokenGenerator().check_token(user, token)
-            raise ValidationErr('Token is not Valid or Expired')
-    
+            raise ValidationError('Token is not Valid or Expired')
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
 
@@ -144,6 +144,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
+        
+        # Check if the instance exists
+        if not instance:
+            raise NotFound("User not found")
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
