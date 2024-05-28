@@ -183,6 +183,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsSuperuserOrReadOnly]
     pagination_class = MyPageNumberPagination
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -295,7 +296,6 @@ class CoverImageViewSet(viewsets.ModelViewSet):
             return Response({"message": "Cover images found successfully", "data": serializer.data}, status=status.HTTP_200_OK)
         except Category.DoesNotExist:
             return Response({"message": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-
 
 class EventViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]

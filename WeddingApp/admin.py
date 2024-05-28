@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs, Notification
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -97,5 +97,3 @@ class ContactUsAdmin(admin.ModelAdmin):
     list_filter = ('name',)
     search_fields = ('name', 'email','message')
     ordering = ('name',)
-
-admin.site.register(Notification)

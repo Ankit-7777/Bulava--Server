@@ -1,7 +1,7 @@
 from django.urls import path
 from WeddingApp.views import (
                             UserRegistrationView, UserLoginView,UserUpdateView,UserChangePasswordView,SendPasswordResetEmailView,
-                            UserPasswordResetView,LogoutUserView,UserProfileView,AllUserProfileView,CategoryViewSet,EventViewSet
+                            UserPasswordResetView,LogoutUserView,UserProfileView,AllUserProfileView,CategoryViewSet,EventViewSet,CoverImageViewSet
 
                             )
 
@@ -37,6 +37,7 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='profile'), 
     path('categories/search/', CategoryViewSet.as_view({'get': 'search'}), name='category-search'),
     path('events/get-events-for-category/<int:category_id>/', EventViewSet.as_view({'get': 'get_events_for_category'}), name='event-get-events-for-category'),
+    path('get-cover-image-for-category/<int:category_type>/',CoverImageViewSet.as_view({'get': 'get_cover_images_for_category_type'}), name = 'get-cover-images-for-category_type')
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
