@@ -19,7 +19,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.models import TokenUser
 from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
 from WeddingApp.models import UserProfile,Category, CoverImage,Event,ContactUs
-from WeddingApp.permissions import IsSuperuser
+from WeddingApp.permissions import IsSuperuserOrReadOnly
 from django.core.mail import send_mail
 from django.http import Http404
 from WeddingApp.serializers import (
@@ -48,7 +48,7 @@ from WeddingApp.pagination import MyPageNumberPagination
 
 class AllUserProfileView(APIView):
     renderer_classes = [UserProfileRenderer]
-    permission_classes = [IsSuperuser]
+    permission_classes = [IsSuperuserOrReadOnly]
     authentication_classes = [JWTAuthentication]
     
     def get(self, request, pk=None):
@@ -121,51 +121,6 @@ class LogoutUserView(APIView):
         response.delete_cookie('token')  # Delete the token cookie
         return response
 
-# class LogoutUserView(APIView):
-#     renderer_classes = [UserProfileRenderer]
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         # Get the user's token
-#         token = request.headers.get('Authorization').split(' ')[1]
-
-#         # Check if the token is already blacklisted
-#         if BlacklistedToken.objects.filter(token=token).exists():
-#             return Response({'msg': 'Token already blacklisted'}, status=status.HTTP_200_OK)
-
-#         # Add the token to the blacklist
-#         BlacklistedToken.objects.create(token=token)
-
-#         # Clear the session
-#         django_logout(request)
-
-#         return Response({'msg': 'Logged out successfully'}, status =status.HTTP_200_OK)
-
-# class LogoutUserView(APIView):
-#     renderer_classes = [UserProfileRenderer]
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         # Get the user's token
-#         auth_header = request.headers.get('Authorization')
-#         if auth_header and 'Bearer' in auth_header:
-#             token = auth_header.split(' ')[1]
-        
-#             # Set the user's token to None in the database
-#             user = authenticate(request=request)
-#             if user:
-#                 user.auth_token = None
-#                 user.save()
-
-#             # Clear the session
-#             django_logout(request)
-
-#             return Response({'msg': 'Logged out successfully'}, status=HTTP_200_OK)
-        
-#         return Response({'error': 'Invalid Authorization header'}, status=HTTP_403_FORBIDDEN)
-
 class UserUpdateView(APIView):
     renderer_classes=[UserProfileRenderer]
     permission_classes = [IsAuthenticated]
@@ -225,9 +180,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsSuperuser]
+    permission_classes = [IsSuperuserOrReadOnly]
     pagination_class = MyPageNumberPagination
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -280,7 +234,7 @@ class CoverImageViewSet(viewsets.ModelViewSet):
     serializer_class = CoverImageSerializer
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsSuperuser]
+    permission_classes = [IsSuperuserOrReadOnly]
     pagination_class = MyPageNumberPagination
 
     def create(self, request, *args, **kwargs):
@@ -330,7 +284,7 @@ class CoverImageViewSet(viewsets.ModelViewSet):
 
 class EventViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
-    permission_classes = [IsSuperuser]
+    permission_classes = [IsSuperuserOrReadOnly]
     authentication_classes = [JWTAuthentication]
     pagination_class = MyPageNumberPagination
     queryset = Event.objects.all()
