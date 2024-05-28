@@ -5,6 +5,9 @@ from django.contrib.auth.hashers import make_password
 from django.core.validators import FileExtensionValidator
 from PIL import Image
 from django.core.exceptions import ValidationError
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.contrib.auth.models import User
 
 
 class MyUserManager(BaseUserManager):
@@ -138,3 +141,38 @@ class ContactUs(models.Model):
     name = models.CharField(_("Name"), max_length=100,  null=False)
     email = models.EmailField(_("Email"),null=False)
     message = models.TextField(_("Message"), max_length=300,null=False)
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    notification = models.TextField(max_length=300)
+    is_seen = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+   
+    def save(self, *args, **kwargs):
+        super(Notification, self).save(*args, **kwargs)
+        self.send_notification()
+
+    def send_notification(self):
+        """
+        Sends a notification through channels to the respective user.
+        """
+        channel_layer = get_channel_layer()
+        notification_objs_count = Notification.objects.filter(user=self.user, is_seen=False).count()
+        data = {
+            'count': notification_objs_count,
+            'current_notification': self.notification,
+            'user_id': self.user.id,
+            'notification': self.notification,
+            'is_seen': self.is_seen
+        }
+
+        async_to_sync(channel_layer.group_send)(
+            f"user_{self.user.id}",
+            {
+                'type': 'send_notification',
+                'data': data
+            }
+        )
