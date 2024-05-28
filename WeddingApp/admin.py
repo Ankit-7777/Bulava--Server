@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs, Notification
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -27,17 +27,17 @@ class UserProfileAdmin(UserAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('id','category_name',)
-    list_filter = ('category_name',)
-    search_fields = ('category_name',)
+    list_filter = ('category_name','additional_fields')
+    search_fields = ('category_name','additional_fields')
     ordering = ('category_name',)
 
 @admin.register(CoverImage)
 class CoverImageAdmin(admin.ModelAdmin):
     list_per_page = 10
-    list_display = ('id','image','event_type')
-    list_filter = ('image','event_type')
-    search_fields = ('image','event_type')
-    ordering = ('image','event_type')
+    list_display = ('id','image','event_category')
+    list_filter = ('image','event_category')
+    search_fields = ('image','event_category')
+    ordering = ('image','event_category')
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
@@ -97,3 +97,5 @@ class ContactUsAdmin(admin.ModelAdmin):
     list_filter = ('name',)
     search_fields = ('name', 'email','message')
     ordering = ('name',)
+
+admin.site.register(Notification)

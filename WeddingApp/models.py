@@ -58,14 +58,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 class Category(models.Model):
     id = models.AutoField(_("Id"), primary_key=True)
     category_name = models.CharField(max_length=50, unique=True)
-
+    additional_fields = models.JSONField(null=False, default = dict())
     def __str__(self):
         return self.category_name
 
 class CoverImage(models.Model):
     id = models.AutoField(_("ID"), primary_key=True, unique=True)
     image = models.ImageField(upload_to='covers/', blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])])
-    event_type = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events_category_type')
+    event_category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='events_category_type')
     
     def __str__(self):
         return f"Theme CoverImage"
