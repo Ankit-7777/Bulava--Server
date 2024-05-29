@@ -182,7 +182,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsSuperuserOrReadOnly]
-    pagination_class = MyPageNumberPagination
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -237,7 +236,6 @@ class CoverImageViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsSuperuserOrReadOnly]
-    pagination_class = MyPageNumberPagination
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -301,7 +299,6 @@ class EventViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
     permission_classes = [IsSuperuserOrReadOnly]
     authentication_classes = [JWTAuthentication]
-    pagination_class = MyPageNumberPagination
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     

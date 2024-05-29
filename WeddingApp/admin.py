@@ -26,9 +26,9 @@ class UserProfileAdmin(UserAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id','category_name',)
-    list_filter = ('category_name','additional_fields')
-    search_fields = ('category_name','additional_fields')
+    list_display = ('id','category_name','category_image')
+    list_filter = ('category_name','additional_fields','category_image')
+    search_fields = ('category_name','additional_fields','category_image')
     ordering = ('category_name',)
 
 @admin.register(CoverImage)
