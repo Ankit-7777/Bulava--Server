@@ -22,7 +22,7 @@ urlpatterns = [
 
     
     path('user-registration/' ,UserRegistrationView.as_view(),name='register-UserProfile'),
-    path('user-login',UserLoginView.as_view(),name='login-UserProfile'),
+    path('user-login/',UserLoginView.as_view(),name='login-UserProfile'),
     path('changepassword/', UserChangePasswordView.as_view(), name='changepassword'),
     path('user-update/',UserUpdateView.as_view(),name='UserProfile-update'),
     path('send-reset-password-email/', SendPasswordResetEmailView.as_view(), name='send-reset-password-email'),
