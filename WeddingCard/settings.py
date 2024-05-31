@@ -27,7 +27,11 @@ SECRET_KEY = 'django-insecure-*c+awqyrp-yv@67*3_@qs^m#w@32*ua%p0jk*+yjl9-wx9v%1f
 DEBUG = True
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ALLOWED_HOSTS = ['*']
+=======
+ALLOWED_HOSTS = ['semi.pythonanywhere.com']
+>>>>>>> Stashed changes
 =======
 ALLOWED_HOSTS = ['semi.pythonanywhere.com']
 >>>>>>> Stashed changes
