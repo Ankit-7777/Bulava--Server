@@ -26,11 +26,7 @@ SECRET_KEY = 'django-insecure-*c+awqyrp-yv@67*3_@qs^m#w@32*ua%p0jk*+yjl9-wx9v%1f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-<<<<<<< Updated upstream
 ALLOWED_HOSTS = ['*']
-=======
-ALLOWED_HOSTS = ['semi.pythonanywhere.com']
->>>>>>> Stashed changes
 
 
 # Application definition
