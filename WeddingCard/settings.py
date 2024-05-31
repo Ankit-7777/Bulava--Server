@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-*c+awqyrp-yv@67*3_@qs^m#w@32*ua%p0jk*+yjl9-wx9v%1f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+<<<<<<< Updated upstream
 ALLOWED_HOSTS = ['*']
+=======
+ALLOWED_HOSTS = ['semi.pythonanywhere.com']
+>>>>>>> Stashed changes
 
 
 # Application definition
@@ -136,9 +140,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# STATIC_ROOT = '/home/semi/Bulava-Server/WeddingCard/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = "media/"
 AUTH_USER_MODEL = 'WeddingApp.UserProfile'
 
@@ -161,7 +167,7 @@ DEFAULT_FROM_EMAIL = os.getenv('EMAIL_USER')
 
 
 REST_FRAMEWORK = {
- 
+
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -170,7 +176,6 @@ REST_FRAMEWORK = {
 
 # Django project settings.py
 
-from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=2),
@@ -195,9 +200,10 @@ PASSWORD_RESET_TIMEOUT=900
 JWT_COOKIE_EXPIRATION = 3600
 
 CORS_ALLOWED_ORIGINS = [
-   
+
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://semi.pythonanywhere.com"
 ]
 
 
