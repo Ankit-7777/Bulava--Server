@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from WeddingApp.models import UserProfile, Category, CoverImage, Event,ContactUs
+from WeddingApp.models import UserProfile
 from rest_framework.validators import ValidationError
-from .utils import Utils
+from WeddingApp.utils import Utils
 from rest_framework.validators import UniqueValidator
 import re
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
@@ -52,7 +52,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         email=attrs.get('email')
         user=UserProfile.objects.filter(email=email)        
         if  not user.exists():
-                    raise serializers.ValidationError({'message':'The email is not valid'})
+                    raise serializers.ValidationError({'email':'The email is not valid'})
         return attrs
 
 class UserChangePasswordSerializer(serializers.Serializer):
@@ -60,10 +60,8 @@ class UserChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     confirm_new_password = serializers.CharField(required=True)
 
-    
     def validate_old_password(self, value):
         user = self.context['request'].user
-        print(user, "*************")
         if not user.check_password(value):
             raise serializers.ValidationError("The old password is incorrect.")
         return value
@@ -92,11 +90,8 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
         if UserProfile.objects.filter(email = email).exists():
             user = UserProfile.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
-            print('Encoded UID', uid)
             token = PasswordResetTokenGenerator().make_token(user)
-            print('Password Reset Token', token)
             link = 'http://127.0.0.1:3000/reset-password/'+uid+'/'+token
-            print('Password Reset Link',link)
             #Send Email
             body = 'Click Following Link to Reset Your Password' +link
             data = {
@@ -155,122 +150,3 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
-
-    def create(self, validated_data):
-        category_name = validated_data['category_name'].lower()
-        if Category.objects.filter(category_name__iexact=category_name).exists():
-            raise serializers.ValidationError("Category Name Already Exists")
-        return Category.objects.create(category_name=category_name)
-
-    def update(self, instance, validated_data):
-        category_name = validated_data.get('category_name', instance.category_name).lower()
-        if Category.objects.filter(category_name__iexact=category_name).exclude(pk=instance.pk).exists():
-            raise serializers.ValidationError("Category Name Already Exists")
-        instance.category_name = category_name
-        instance.save()
-        return instance
-
-class CoverImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CoverImage
-        fields = '__all__'
-    
-    def validate_image(self, value):
-        """
-        Validate the image field.
-        """
-        if not value:
-            raise serializers.ValidationError("Image field is required.")
-
-        # Check if an image with the same content already exists
-        if CoverImage.objects.filter(image=value).exists():
-            raise serializers.ValidationError("An image with the same content already exists.")
-
-        return value
-
-    def create(self, validated_data):
-        """
-        Create and return a new CoverImage instance, given the validated data.
-        """
-        return CoverImage.objects.create(**validated_data)
-    
-    def retrieve(self, pk):
-        """
-        Retrieve and return a CoverImage instance, given the validated data.
-        """
-        return CoverImage.objects.get(pk=pk)
-           
-class EventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Event
-        exclude = ('id', 'created_at', 'updated_at')
-
-    def validate(self, attrs):
-        errors = {}
-
-        event_date = attrs.get('event_date')
-        event_start_time = attrs.get('event_start_time')
-        event_end_time = attrs.get('event_end_time')
-        created_at = attrs.get('created_at')
-
-        # Validate event date is in the future
-        if event_date and event_date < timezone.now().date():
-            errors['event_date'] = ['Event date must be in the future.']
-
-        # Validate event start time is before end time
-        if event_start_time and event_end_time:
-            start_datetime = timezone.datetime.combine(timezone.now().date(), event_start_time)
-            end_datetime = timezone.datetime.combine(timezone.now().date(), event_end_time)
-            if start_datetime >= end_datetime:
-                errors['event_start_time'] = ['Event start time must be before end time.']
-
-        # Validate event duration is at least one hour
-        if event_start_time and event_end_time:
-            start_datetime = timezone.datetime.combine(timezone.now().date(), event_start_time)
-            end_datetime = timezone.datetime.combine(timezone.now().date(), event_end_time)
-            time_diff = (end_datetime - start_datetime).total_seconds()
-            if time_diff < 3600:  # 3600 seconds = 1 hour
-                errors['event_end_time'] = ['The event duration must be at least one hour.']
-
-        # Validate event date is not before creation date
-        if event_date and created_at and event_date < created_at.date():
-            errors['event_date'] = ['Event date cannot be before the creation date.']
-
-        # Validate bride's age
-        bride_age = attrs.get('bride_age')
-        if bride_age is not None and bride_age < 18:
-            errors['bride_age'] = ["Bride must be at least 18 years old."]
-
-        # Validate groom's age
-        groom_age = attrs.get('groom_age')
-        if groom_age is not None and groom_age < 21:
-            errors['groom_age'] = ["Groom must be at least 21 years old."]
-
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return attrs
-
-class ContactUsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ContactUs
-        fields = '__all__'
-    
-    def validate(self, data):
-        errors = {}
-        message = data.get('message', None)
-        if not message:
-            errors['message'] = ['Message field is required.']
-        if message and len(message) <= 180:
-            errors['message'] = ['Message must be more than 30 characters.']
-        if errors:
-            raise serializers.ValidationError(errors)
-        return data
-    
-    def create(self, validated_data):
-        return ContactUs.objects.create(**validated_data)
