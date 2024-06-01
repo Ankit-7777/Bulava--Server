@@ -196,12 +196,13 @@ SIMPLE_JWT = {
 PASSWORD_RESET_TIMEOUT=900
 JWT_COOKIE_EXPIRATION = 3600
 
-CORS_ALLOWED_ORIGINS = [
+# CORS_ALLOWED_ORIGINS = [
 
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://semi.pythonanywhere.com"
-]
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+#     "http://semi.pythonanywhere.com"
+# ]
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
 
 
 REST_FRAMEWORK = {

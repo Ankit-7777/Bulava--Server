@@ -1,7 +1,8 @@
 from django.urls import path
 from WeddingApp.views import (
                             UserRegistrationView, UserLoginView,UserUpdateView,UserChangePasswordView,SendPasswordResetEmailView,
-                            UserPasswordResetView,LogoutUserView,UserProfileView,AllUserProfileView,CategoryViewSet,EventViewSet,CoverImageViewSet
+                            UserPasswordResetView,LogoutUserView,UserProfileView,
+                            CategoryViewSet,EventViewSet,CoverImageViewSet
 
                             )
 
@@ -28,8 +29,6 @@ urlpatterns = [
     path('send-reset-password-email/', SendPasswordResetEmailView.as_view(), name='send-reset-password-email'),
     path('reset-password/<uid>/<token>/', UserPasswordResetView.as_view(), name='reset-password'),
     path('user-logout/', LogoutUserView.as_view(), name='user-logout'),
-    path('users/', AllUserProfileView.as_view(), name='user_profile_list'),
-    path('users/<int:pk>/', AllUserProfileView.as_view(), name='user_profile_detail'),
     path('gettoken/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),

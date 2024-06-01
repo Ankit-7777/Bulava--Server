@@ -12,7 +12,7 @@ class UserProfileAdmin(UserAdmin):
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('full_name', 'phone')}),
+        ('Personal Info', {'fields': ('full_name', 'phone','image')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('created_at', 'updated_at')}),
     )
@@ -41,13 +41,13 @@ class CoverImageAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'event_category', 'event_date', 'event_start_time', 'event_end_time', 'is_published')
+    list_display = ('id', 'title','user', 'event_category', 'event_date', 'event_start_time', 'event_end_time', 'is_published')
     list_filter = ('event_category', 'is_published', 'event_date')
     search_fields = ('title', 'description', 'venue_name', 'venue_address')
     readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         (None, {
-            'fields': ('event_category','title', 'description')
+            'fields': ('event_category','user','title', 'description')
         }),
         ('Event Details', {
             'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_name', 'venue_address', 'venue_pin_code')
@@ -56,7 +56,7 @@ class EventAdmin(admin.ModelAdmin):
             'fields': ('email', 'phone_number', 'organizer_name', 'guest_of_honor')
         }),
         ('Additional Information', {
-            'fields': ('max_guests', 'theme', 'dress_code', 'gift_sending_link', 'is_published')
+            'fields': ('max_guests', 'theme', 'dress_code', 'gift_sending_link', 'is_published','is_seen')
         }),
         ('Wedding Specific', {
             'fields': ('bride_name', 'groom_name', 'bride_mother_name', 'bride_father_name', 'groom_mother_name', 'groom_father_name', 'bride_age', 'groom_age'),
