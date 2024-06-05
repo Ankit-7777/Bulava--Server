@@ -80,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'WeddingCard.wsgi.application'
+WSGI_APPLICATION = 'WeddingCard.wsgi.application'
 ASGI_APPLICATION = 'WeddingCard.asgi.application'
 
 
