@@ -39,7 +39,7 @@ class Event(models.Model):
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
     #Notification Specific Fields
-    is_seen = models.BooleanField(null=True, default=False)
+    is_seen = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.title} ({self.event_category})"
 

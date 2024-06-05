@@ -41,7 +41,7 @@ class CoverImageAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title','user', 'event_category', 'event_date', 'event_start_time', 'event_end_time', 'is_published')
+    list_display = ('id', 'title','user', 'event_category', 'event_date', 'event_start_time', 'event_end_time','is_seen', 'is_published')
     list_filter = ('event_category', 'is_published', 'event_date')
     search_fields = ('title', 'description', 'venue_name', 'venue_address')
     readonly_fields = ('created_at', 'updated_at')
