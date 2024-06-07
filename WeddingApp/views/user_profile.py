@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authentication import TokenAuthentication
-from WeddingApp.models import UserProfile, Category, CoverImage, Event, ContactUs
+from WeddingApp.models import UserProfile, Category, CoverImage, Event, ContactUs,Device
 from WeddingApp.permissions import IsSuperuserOrReadOnly
 from django.core.mail import send_mail
 from WeddingApp.serializers import (
@@ -50,46 +50,73 @@ class UserProfileView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
 
 class UserRegistrationView(APIView):
-    renderer_classes=[UserProfileRenderer]
+    renderer_classes = [UserProfileRenderer]
     
     def post(self, request, format=None):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             token = get_tokens_for_user(user)
-            response = Response({'token':token,'user_detail':serializer.data}, status=status.HTTP_200_OK)
+            headers = request.headers
+            if headers.get('Device-Token') and headers.get('Token') and headers.get('Type'):
+                Device.objects.get_or_create(
+                    device_id=headers.get('Device-Token'),
+                    type=headers.get('Type'),
+                    token=headers.get('Token'),
+                    user=user
+                )
+            response = Response({'token': token, 'user_detail': serializer.data}, status=status.HTTP_200_OK)
             return response
         return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 class UserLoginView(APIView):
-    renderer_classes=[UserProfileRenderer]
-    def post(self,request,format=None):
-        serializer=UserLoginSerializer(data=request.data)
+    renderer_classes = [UserProfileRenderer]
+
+    def post(self, request, format=None):
+        serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            email=serializer.data.get('email')
-            password=serializer.data.get('password')
-            user=UserProfile.objects.get(email=email)
-            
-            if user is not None and check_password(password,user.password):
-                
-                serializer=UserProfileSerializer(user)
-                token=get_tokens_for_user(user)
-                response = Response({'token':token,'user_detail':serializer.data}, status=status.HTTP_200_OK)
-                return response
-                
+            email = serializer.validated_data.get('email')
+            password = serializer.validated_data.get('password')
+            try:
+                user = UserProfile.objects.get(email=email)
+            except UserProfile.DoesNotExist:
+                return Response({'error': {'non_field_errors': ['Email or Password is Not Valid']}}, status=status.HTTP_400_BAD_REQUEST)
+
+            if check_password(password, user.password):
+                user_serializer = UserProfileSerializer(user)
+                token = get_tokens_for_user(user)
+
+                # Handle device-specific information
+                headers = request.headers
+                device_id = headers.get('Device-Token')
+                device_token = headers.get('Token')
+                device_type = headers.get('Type')
+
+                if device_id and device_token and device_type:
+                    Device.objects.get_or_create(
+                        device_id=device_id,
+                        type=device_type,
+                        token=device_token,
+                        user=user
+                    )
+
+                return Response({'token': token, 'user_detail': user_serializer.data}, status=status.HTTP_200_OK)
             else:
-                return Response({'error':{'non_field_errors':['Email or Password is Not Valid']},},status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors,status.HTTP_422_UNPROCESSABLE_ENTITY)
+                return Response({'error': {'non_field_errors': ['Email or Password is Not Valid']}}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 class LogoutUserView(APIView):
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    def get(self, request):
-        django_logout(request)  # Clear the session
-        response = Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
-        response.delete_cookie('token')  # Delete the token cookie
-        return response
+
+    def post(self,request):
+        device_id = request.headers.get('Device-Token')
+        if device_id and request.user.is_authenticated:
+            device = Device.objects.filter(device_id=device_id, user=request.user).first()
+            if device:
+                device.delete()
+        return Response({'message': 'Log out Successfully.'}, status=status.HTTP_200_OK)
 
 class UserUpdateView(APIView):
     renderer_classes=[UserProfileRenderer]

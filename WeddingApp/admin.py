@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs,Device
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -41,36 +41,27 @@ class CoverImageAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title','user', 'event_category', 'event_date', 'event_start_time', 'event_end_time','is_seen', 'is_published')
-    list_filter = ('event_category', 'is_published', 'event_date')
-    search_fields = ('title', 'description', 'venue_name', 'venue_address')
+    list_display = ('id', 'event_category', 'user', 'is_published','is_seen', 'created_at', 'updated_at')
+    list_filter = ('event_category', 'user', 'is_published', 'is_seen')
+    search_fields = ('event_category__name', 'user__username')
     readonly_fields = ('created_at', 'updated_at')
+
     fieldsets = (
         (None, {
-            'fields': ('event_category','user','title', 'description')
-        }),
-        ('Event Details', {
-            'fields': ('event_date', 'event_start_time', 'event_end_time', 'venue_name', 'venue_address', 'venue_pin_code')
-        }),
-        ('Contact Information', {
-            'fields': ('email', 'phone_number', 'organizer_name', 'guest_of_honor')
-        }),
-        ('Additional Information', {
-            'fields': ('max_guests', 'theme', 'dress_code', 'gift_sending_link', 'is_published','is_seen')
-        }),
-        ('Wedding Specific', {
-            'fields': ('bride_name', 'groom_name', 'bride_mother_name', 'bride_father_name', 'groom_mother_name', 'groom_father_name', 'bride_age', 'groom_age'),
-            'classes': ('collapse',)
-        }),
-        ('Birthday Specific', {
-            'fields': ('birthday_person_name', 'birthday_person_age'),
-            'classes': ('collapse',)
+            'fields': ('event_category', 'user', 'additional_fields', 'is_published', 'is_seen')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
         }),
     )
+
+@admin.register(Device)
+class DeviceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'device_id', 'type', 'token', 'created_at', 'updated_at')
+    search_fields = ('device_id', 'user__username', 'type')
+    list_filter = ('type', 'created_at')
+    ordering = ('-created_at',)
 
 @admin.register(Guest)
 class GuestAdmin(admin.ModelAdmin):
