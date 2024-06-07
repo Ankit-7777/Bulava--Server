@@ -9,7 +9,7 @@ def send_event_notification(sender, instance, created, **kwargs):
     if created:
         user_id = instance.user.id
         group_name = f"user_{user_id}"
-        notification_message = f"A new event '{instance.title}' has been created."
+        notification_message = f"A new event '{instance.event_category}' has been created."
 
         print(f"Sending notification to group {group_name}: {notification_message}")
 
