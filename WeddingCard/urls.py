@@ -6,6 +6,7 @@ from WeddingApp.views import (
     CoverImageViewSet,
     EventViewSet,
     ContectUsViewSet,
+    AppConfigViewSet,
 )
 
 
@@ -14,6 +15,7 @@ router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'cover-images', CoverImageViewSet, basename='coverimage')
 router.register(r'events', EventViewSet, basename='events')
 router.register(r'contact-us', ContectUsViewSet, basename='contact-us')
+router.register(r'app_config', AppConfigViewSet, basename='app_config')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

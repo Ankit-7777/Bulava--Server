@@ -4,3 +4,4 @@ from .cover_image import CoverImageSerializer
 from .event import EventSerializer
 from .contact import ContactUsSerializer
 from .device import DeviceSerializer
+from .app_config import AppConfigSerializer
