@@ -48,6 +48,11 @@ class UserProfileView(APIView):
     def get(self, request, formate=None):
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data, status = status.HTTP_200_OK)
+    
+    def delete(self, request, format=None):
+        user = request.user
+        user.delete()
+        return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
 
 class UserRegistrationView(APIView):
     renderer_classes = [UserProfileRenderer]
