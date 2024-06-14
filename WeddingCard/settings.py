@@ -142,8 +142,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # STATIC_ROOT = '/home/semi/Bulava-Server/WeddingCard/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AUTH_USER_MODEL = 'WeddingApp.UserProfile'
 
 # Or directly setting them
@@ -226,3 +226,34 @@ CHANNEL_LAYERS = {
         },
     },
 }
+# settings.py
+
+import logging
+
+logging.basicConfig(level=logging.ERROR)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',  # Change DEBUG to INFO to reduce verbosity
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',  # Only log errors
+            'propagate': False,
+        },
+        'py.warnings': {
+            'handlers': ['console'],
+            'level': 'ERROR',  # Only log errors
+        },
+    },
+}
+

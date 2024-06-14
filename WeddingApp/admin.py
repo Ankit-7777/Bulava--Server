@@ -48,7 +48,7 @@ class EventAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('event_category', 'user', 'additional_fields', 'is_published', 'is_seen')
+            'fields': ('event_category', 'user','cover_image_id', 'additional_fields', 'is_published', 'is_seen')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),

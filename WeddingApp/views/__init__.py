@@ -4,3 +4,5 @@ from .cover_image import CoverImageViewSet
 from .event import EventViewSet
 from .contact import ContectUsViewSet
 from .app_config import AppConfigViewSet
+from .pdf import GenerateEventCardPdf
+from .render import index, birthday,inaugrations,custom,wedding
