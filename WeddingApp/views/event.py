@@ -10,11 +10,12 @@ from WeddingApp.permissions import IsSuperuserOrReadOnly
 from WeddingApp.serializers import EventSerializer
 from WeddingApp.pagination import MyPageNumberPagination
 from WeddingApp.models import Category
+from rest_framework.permissions import IsAuthenticated
 
 
 class EventViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
-    permission_classes = [IsSuperuserOrReadOnly]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
