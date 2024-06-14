@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Cards</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 0;">
+    <div class="container" style="width: 100%; padding: 20px; background-color: #f2f2f2;">
+        <div class="header" style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: red; font-size: 24px; margin: 0 0 10px; border-bottom: 2px solid red;">Event Card</h1>
+            <p style="color: #007cae; font-size: 16px; margin: 0;">Date: {{ data.today }}</p>
+        </div>
+        <div class="content" style="margin-bottom: 20px; padding: 10px; background-image: url('static/images/brown_bg.png'); background-size: cover; background-position: center; background-attachment: fixed; border-radius: 10px; color: #333;">
+            {% for field in data.additional_fields %}
+                <div class="field" style="margin-bottom: 10px; padding: 10px; background-color: rgba(255, 255, 255, 0.8); border-radius: 5px;">
+                    <span class="label" style="font-weight: bold;">{{ field.label }}:</span> {{ field.value }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="footer" style="text-align: center; margin-bottom: 20px;">
+            <p>Thank you for joining us!</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -5,6 +5,7 @@ from django.core.validators import FileExtensionValidator
 
 class Event(models.Model):
     id = models.AutoField(_("ID"), primary_key=True)
+    cover_image_id = models.ForeignKey('CoverImage', on_delete = models.CASCADE, related_name= 'event_cover_image')
     user = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name = 'events_user')
     event_category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events_category')
     additional_fields = models.JSONField(_("Fields"), null=False, default = dict())
@@ -13,7 +14,7 @@ class Event(models.Model):
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
     is_seen = models.BooleanField(default=False)
     def __str__(self):
-        return f"({self.event_category})"
+        return f"{self.event_category}"
 
     class Meta:
         verbose_name = _('Event')

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from WeddingApp.models import Event
 from rest_framework.validators import ValidationError
-from django.utils import timezone
 from datetime import datetime
 import re
 
@@ -33,31 +32,29 @@ class EventSerializer(serializers.ModelSerializer):
                     errors[key] = [f'{label} must be a valid email address.']
 
             if field_type == "date" and value:
-                date_format = "%Y-%m-%d"
-                if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', value):
-                    errors[key] = [f'{label} must be a valid date in YYYY-MM-DD format.']
-                else:
-                    date_value = datetime.strptime(value, date_format).date()
+                try:
+                    date_value = datetime.strptime(value, "%Y-%m-%d").date()
                     if date_value < datetime.now().date():
                         errors[key] = [f'{label} must be a future date.']
+                except ValueError:
+                    errors[key] = [f'{label} must be a valid date in YYYY-MM-DD format.']
 
             if field_type == "time" and value:
-                time_format = "%H:%M"
-                if len(value) != len(time_format) or not re.match(r'\d{2}:\d{2}', value):
-                    errors[key] = [f'{label} must be a valid time in HH:MM format.']
-                else:
-                    time_value = datetime.strptime(value, time_format).time()
+                try:
+                    time_value = datetime.strptime(value, "%H:%M").time()
                     if key == "event_start_time":
                         start_time = time_value
                     if key == "event_end_time":
                         end_time = time_value
-                        if 'start_time' in locals() and start_time >= end_time:
+                        if start_time >= end_time:
                             errors[key] = [f'{label} must be before end time.']
-                        if 'start_time' in locals() and (datetime.combine(datetime.today(), end_time) - datetime.combine(datetime.today(), start_time)).seconds < 3600:
+                        if (end_time.hour * 60 + end_time.minute) - (start_time.hour * 60 + start_time.minute) < 60:
                             errors[key] = [f'The event duration must be at least one hour.']
+                except ValueError:
+                    errors[key] = [f'{label} must be a valid time in HH:MM format.']
 
             if field_type == "int" and value:
-                if not value.isdigit():
+                if not str(value).isdigit():
                     errors[key] = [f'{label} must be a valid integer.']
                 else:
                     int_value = int(value)
