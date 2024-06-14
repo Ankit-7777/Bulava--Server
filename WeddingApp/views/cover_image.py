@@ -17,7 +17,7 @@ class CoverImageViewSet(viewsets.ModelViewSet):
     serializer_class = CoverImageSerializer
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperuserOrReadOnly]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
