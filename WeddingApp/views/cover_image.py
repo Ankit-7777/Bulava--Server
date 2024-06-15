@@ -18,6 +18,14 @@ class CoverImageViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsSuperuserOrReadOnly]
+    
+    def get_queryset(self):
+        return CoverImage.objects.all()
+    
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -26,13 +34,10 @@ class CoverImageViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def retrieve(self, request, pk=None):
-        try:
-            cover_image = CoverImage.objects.get(id=pk)
-            serializer = CoverImageSerializer(cover_image)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except CoverImage.DoesNotExist:
-            return Response({"message": "Cover image not found"}, status=status.HTTP_404_NOT_FOUND)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def update(self, request, pk=None):
         try:

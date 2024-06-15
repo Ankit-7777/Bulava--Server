@@ -3,7 +3,7 @@ from WeddingApp.models import Event
 from rest_framework.validators import ValidationError
 from datetime import datetime
 import re
-from WeddingApp.serializers import CoverImageSerializer
+from WeddingApp.serializers import CoverImageSerializer, ListCoverImageSerializer
 
 def check_validation(additional_fields, errors):
     
@@ -69,7 +69,7 @@ def check_validation(additional_fields, errors):
     return errors
 
 class EventSerializer(serializers.ModelSerializer):
-    cover_image = CoverImageSerializer(source='cover_image_id', read_only=True)
+    cover_image_id = ListCoverImageSerializer()
     additional_fields = serializers.JSONField(required=True)
 
     class Meta:

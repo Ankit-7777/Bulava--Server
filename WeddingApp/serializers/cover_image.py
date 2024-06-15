@@ -28,9 +28,9 @@ class CoverImageSerializer(serializers.ModelSerializer):
         """
         return CoverImage.objects.create(**validated_data)
     
-    def retrieve(self, pk):
-        """
-        Retrieve and return a CoverImage instance, given the validated data.
-        """
-        return CoverImage.objects.get(pk=pk)
+class ListCoverImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CoverImage
+        fields = '__all__'
+    
      
