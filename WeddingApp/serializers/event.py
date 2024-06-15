@@ -9,7 +9,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        exclude = ('id', 'created_at', 'updated_at')
+        fields = '__all__'
 
     def validate(self, attrs):
         errors = {}
