@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs,Device, AppConfig
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs,Device, AppConfig, SubEvent
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -48,13 +48,21 @@ class EventAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('event_category', 'user','cover_image_id', 'additional_fields', 'is_published', 'is_seen')
+            'fields': ('event_category', 'user','cover_image_id','image', 'additional_fields', 'is_published', 'is_seen')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',),
         }),
     )
+
+@admin.register(SubEvent)
+class SubEventCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id','category','name','image')
+    list_filter = ('name','additional_fields','image')
+    search_fields = ('category','event','name','additional_fields','image')
+    ordering = ('name',)
+
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
