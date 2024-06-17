@@ -6,6 +6,7 @@ from django.core.validators import FileExtensionValidator
 class Event(models.Model):
     id = models.AutoField(_("ID"), primary_key=True)
     cover_image_id = models.ForeignKey('CoverImage', on_delete = models.CASCADE, related_name= 'event_cover_image')
+    image = models.ImageField(upload_to='EventImages/', blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp'])])
     user = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name = 'events_user')
     event_category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events_category')
     additional_fields = models.JSONField(_("Fields"), null=False, default = dict())
