@@ -27,10 +27,4 @@ class CoverImageSerializer(serializers.ModelSerializer):
         Create and return a new CoverImage instance, given the validated data.
         """
         return CoverImage.objects.create(**validated_data)
-    
-class ListCoverImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CoverImage
-        fields = '__all__'
-    
-     
+
