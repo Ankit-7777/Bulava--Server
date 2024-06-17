@@ -8,3 +8,4 @@ from .vendor import Vendor
 from .event import Event
 from .device import Device
 from .app_config import AppConfig
+from .sub_event import SubEvent
