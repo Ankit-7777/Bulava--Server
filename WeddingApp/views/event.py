@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from WeddingApp.models import Event
-from WeddingApp.permissions import IsSuperuserOrReadOnly
+from WeddingApp.permissions import IsSuperuserOrReadOnly,IsEventOwner
 from WeddingApp.serializers import EventSerializer
 from WeddingApp.pagination import MyPageNumberPagination
 from WeddingApp.models import Category
@@ -16,7 +16,7 @@ from django.db.models import Q
 class EventViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
     pagination_class = MyPageNumberPagination
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsEventOwner]
     authentication_classes = [JWTAuthentication]
     queryset = Event.objects.all()
     serializer_class = EventSerializer

@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from WeddingApp.models import Event
 
 class IsSuperuserOrReadOnly(BasePermission):
     """
@@ -13,3 +14,13 @@ class IsSuperuserOrReadOnly(BasePermission):
             elif request.user.is_superuser:
                 return True
         return False
+
+class IsEventOwner(BasePermission):
+    """
+    Custom permission to only allow owners of an event to edit or delete it.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.user == request.user
+
