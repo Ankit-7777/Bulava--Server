@@ -2,6 +2,7 @@ from .user_profile import  UserRegistrationView ,UserChangePasswordView,UserLogi
 from .category import CategoryViewSet
 from .cover_image import CoverImageViewSet
 from .event import EventViewSet
+from .sub_event import SubEventViewSet
 from .contact import ContectUsViewSet
 from .app_config import AppConfigViewSet
 from .pdf import GenerateEventCardPdf

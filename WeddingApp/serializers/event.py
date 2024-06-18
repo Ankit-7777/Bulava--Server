@@ -1,9 +1,15 @@
 from rest_framework import serializers
-from WeddingApp.models import Event
+from WeddingApp.models import Event, SubEvent, Category
 from rest_framework.validators import ValidationError
 from datetime import datetime
 import re
 from WeddingApp.serializers import CoverImageSerializer
+
+
+class SubEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubEvent
+        fields = '__all__'
 
 def check_validation(additional_fields, errors):
     
@@ -71,6 +77,9 @@ def check_validation(additional_fields, errors):
 class EventSerializer(serializers.ModelSerializer):
     cover_image = CoverImageSerializer(source='cover_image_id', read_only=True)
     additional_fields = serializers.JSONField(required=True)
+    sub_events = SubEventSerializer(many=True, read_only=True, source='event')
+
+
 
     class Meta:
         model = Event
@@ -88,3 +97,55 @@ class EventSerializer(serializers.ModelSerializer):
         if any([True for error in additional_fields_errors if error]):
             raise serializers.ValidationError({'data': errors})
         return attrs
+    
+    def create(self, validated_data):
+        subevents_data = self.context['request'].data.get('sub_events', [])
+        event = Event.objects.create(**validated_data)
+        subevent_instances = []
+        for subevent_data in subevents_data:
+            category_id = subevent_data.pop('category')
+            category = Category.objects.get(id=category_id)
+            subevent_instance = SubEvent(event=event, category=category, **subevent_data)
+            subevent_instances.append(subevent_instance)
+        SubEvent.objects.bulk_create(subevent_instances)
+        return event
+    
+    
+    def update(self, instance, validated_data):
+        subevents_data = self.context['request'].data.get('sub_events', [])
+        subevent_ids = [item.get('id') for item in subevents_data]
+
+        instance.event_category_id = validated_data.get('event_category_id', instance.event_category_id)
+        instance.user_id = validated_data.get('user_id', instance.user_id)
+        instance.cover_image_id_id = validated_data.get('cover_image_id_id', instance.cover_image_id_id)
+        instance.additional_fields = validated_data.get('additional_fields', instance.additional_fields)
+        instance.save()
+
+        existing_subevents = SubEvent.objects.filter(event=instance)
+        existing_subevents_ids = [subevent.id for subevent in existing_subevents]
+
+        for subevent_data in subevents_data:
+            subevent_id = subevent_data.get('id')
+            category_id = subevent_data.pop('category')
+            category = Category.objects.get(id=category_id)
+            if subevent_id and subevent_id in existing_subevents_ids:
+                subevent = SubEvent.objects.get(id=subevent_id, event=instance)
+                subevent.name = subevent_data.get('name', subevent.name)
+                subevent.category = category
+                subevent.image = subevent_data.get('image', subevent.image)
+                subevent.additional_fields = subevent_data.get('additional_fields', subevent.additional_fields)
+                subevent.save()
+            else:
+                SubEvent.objects.create(
+                    event=instance, 
+                    category=category,
+                    name=subevent_data.get('name'),
+                    image=subevent_data.get('image'),
+                    additional_fields=subevent_data.get('additional_fields', {})
+                )
+        for subevent_id in existing_subevents_ids:
+            if subevent_id not in subevent_ids:
+                SubEvent.objects.get(id=subevent_id).delete()
+
+        return instance
+    
