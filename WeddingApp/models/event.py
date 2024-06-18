@@ -11,6 +11,7 @@ class Event(models.Model):
     event_category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events_category')
     additional_fields = models.JSONField(_("Fields"), null=False, default = dict())
     is_published = models.BooleanField(_("Is Published"), default=False)
+    invited = models.ManyToManyField('UserProfile', related_name='shared_events', blank=True)
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
     is_seen = models.BooleanField(default=False)
