@@ -77,7 +77,7 @@ def check_validation(additional_fields, errors):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    cover_image = CoverImageSerializer(source='cover_image_id', read_only=True)
+    cover_image_id = CoverImageSerializer()
     additional_fields = serializers.JSONField(required=True)
     sub_events = SubEventSerializer(many=True, read_only=True, source='event')
     invited_id = serializers.PrimaryKeyRelatedField(queryset=UserProfile.objects.all(), many=True, write_only=True, required=False)
@@ -88,7 +88,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'image',
-            'cover_image',
+            'cover_image_id',
             'invited',
             'invited_id',
             'user',
