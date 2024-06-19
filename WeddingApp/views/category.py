@@ -48,11 +48,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
             return Response({"message": "Category partially updated successfully", "category_detail": serializer.data},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    def destroy(self, request, pk=None):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response({"message": "Category deleted successfully"}, status=status.HTTP_200_OK)
-
     @action(detail=False, methods=['GET'], name='category_name_search')
     def search(self, request):
         search_str = request.query_params.get('search_str')

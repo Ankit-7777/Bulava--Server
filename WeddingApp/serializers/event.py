@@ -2,7 +2,7 @@ from rest_framework import serializers
 from WeddingApp.models import Event, SubEvent, Category, UserProfile, CoverImage
 from datetime import datetime
 import re
-from WeddingApp.serializers import CoverImageSerializer, UserProfileSerializer
+from WeddingApp.serializers import CoverImageSerializer, UserProfileSerializer, CategorySerializer
 
 class SubEventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -79,6 +79,8 @@ def check_validation(additional_fields, errors):
 class EventSerializer(serializers.ModelSerializer):
     cover_image = serializers.PrimaryKeyRelatedField(queryset=CoverImage.objects.all() , write_only=True, required=False)
     cover_image_id = CoverImageSerializer(read_only=True)
+    event_category_id = serializers.PrimaryKeyRelatedField(queryset= Category.objects.all(), write_only=True, required=False)
+    event_category = CategorySerializer(read_only=True)
     additional_fields = serializers.JSONField(required=True)
     sub_events = SubEventSerializer(many=True, read_only=True, source='event')
     invited_id = serializers.PrimaryKeyRelatedField(queryset=UserProfile.objects.all(), many=True, write_only=True, required=False)
@@ -95,6 +97,7 @@ class EventSerializer(serializers.ModelSerializer):
             'invited_id',
             'user',
             'event_category',
+            'event_category_id',
             'sub_events',
             'additional_fields',
             'is_published',
@@ -108,6 +111,8 @@ class EventSerializer(serializers.ModelSerializer):
         data = super().to_internal_value(data)
         if data.get('cover_image'):
             data['cover_image_id'] = data.pop('cover_image')
+        if data.get('event_category_id'):
+            data['event_category'] = data.pop('event_category_id')
         return data
 
     def validate(self, attrs):
@@ -125,7 +130,7 @@ class EventSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        subevents_data = self.context['request'].data.get('sub_events', [])
+        subevents_data = self.context['request'].data.get('sub_events', []) 
         invited_events = validated_data.pop('invited_id', [])
         event = Event.objects.create(**validated_data)
         subevent_instances = []
@@ -178,3 +183,5 @@ class EventSerializer(serializers.ModelSerializer):
                 SubEvent.objects.get(id=subevent_id).delete()
 
         return instance
+
+

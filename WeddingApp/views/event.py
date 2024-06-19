@@ -26,9 +26,7 @@ class EventViewSet(viewsets.ModelViewSet):
     #         return Event.objects.filter(user=self.request.user)
     #     return super().get_queryset()
     def get_queryset(self):
-            return Event.objects.filter(Q(user=self.request.user) | Q(invited=self.request.user))
-
-    
+            return Event.objects.filter(Q(user=self.request.user) | Q(invited=self.request.user)).distinct()
     def list(self, request):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
