@@ -21,12 +21,13 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     
-    def get_queryset(self):
-        if not self.request.user.is_superuser:
-            return Event.objects.filter(user=self.request.user)
-        return super().get_queryset()
+    # def get_queryset(self):
+    #     if not self.request.user.is_superuser:
+    #         return Event.objects.filter(user=self.request.user)
+    #     return super().get_queryset()
     def get_queryset(self):
             return Event.objects.filter(Q(user=self.request.user) | Q(invited=self.request.user))
+
     
     def list(self, request):
         queryset = self.get_queryset()
