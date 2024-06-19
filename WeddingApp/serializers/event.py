@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from WeddingApp.models import Event, SubEvent, Category, UserProfile
+from WeddingApp.models import Event, SubEvent, Category, UserProfile, CoverImage
 from datetime import datetime
 import re
 from WeddingApp.serializers import CoverImageSerializer, UserProfileSerializer
@@ -77,7 +77,8 @@ def check_validation(additional_fields, errors):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    cover_image_id = CoverImageSerializer()
+    cover_image = serializers.PrimaryKeyRelatedField(queryset=CoverImage.objects.all() , write_only=True, required=False)
+    cover_image_id = CoverImageSerializer(read_only=True)
     additional_fields = serializers.JSONField(required=True)
     sub_events = SubEventSerializer(many=True, read_only=True, source='event')
     invited_id = serializers.PrimaryKeyRelatedField(queryset=UserProfile.objects.all(), many=True, write_only=True, required=False)
@@ -88,6 +89,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'image',
+            'cover_image',
             'cover_image_id',
             'invited',
             'invited_id',
@@ -101,6 +103,12 @@ class EventSerializer(serializers.ModelSerializer):
             'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
+    
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if data.get('cover_image'):
+            data['cover_image_id'] = data.pop('cover_image')
+        return data
 
     def validate(self, attrs):
         errors = []
