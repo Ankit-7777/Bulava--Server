@@ -4,7 +4,7 @@ from django.core.validators import FileExtensionValidator
 
 class SubEvent(models.Model):
     name = models.CharField(max_length=50)
-    category = models.ForeignKey("Category", related_name='subcategories', on_delete=models.CASCADE)
+    category = models.ForeignKey("Category", related_name='subcategories', on_delete=models.PROTECT)
     event = models.ForeignKey("Event", related_name = "event", on_delete=models.CASCADE)
     image = models.ImageField(upload_to='SubEventCategoryImages/', blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp'])])
     additional_fields = models.JSONField(null=False, default=dict())
