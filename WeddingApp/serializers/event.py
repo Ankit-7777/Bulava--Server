@@ -3,6 +3,8 @@ from WeddingApp.models import Event, SubEvent, Category, UserProfile, CoverImage
 from datetime import datetime
 import re
 from WeddingApp.serializers import CoverImageSerializer, UserProfileSerializer, CategorySerializer
+from django.utils import timezone
+
 
 class SubEventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -96,12 +98,14 @@ class EventSerializer(serializers.ModelSerializer):
             'invited',
             'invited_id',
             'user',
+            'role',
             'event_category',
             'event_category_id',
             'sub_events',
             'additional_fields',
             'is_published',
             'is_seen',
+            'event_date',
             'created_at',
             'updated_at'
         ]
@@ -123,8 +127,16 @@ class EventSerializer(serializers.ModelSerializer):
 
         created_at = attrs.get('created_at')
         event_date = attrs.get('event_date')
-        if event_date and created_at and event_date < created_at.date():
-            errors.append({'event_date': 'Event date cannot be before the creation date.'})
+        event_category = attrs.get('event_category')
+
+        if event_date and event_date < timezone.now().date():
+            errors.append({'event_date': 'Event date cannot be a past date.'})
+
+        if event_category and 'wedding' in event_category.category_name.lower():
+            role = attrs.get('role')
+            if not role:
+                errors.append({'role': 'Role is required for events in the Wedding category.'})
+    
         if any([True for error in errors if error]):
             raise serializers.ValidationError({'data': errors})
         return attrs
