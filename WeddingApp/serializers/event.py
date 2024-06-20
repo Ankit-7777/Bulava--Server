@@ -157,6 +157,7 @@ class EventSerializer(serializers.ModelSerializer):
         return event
 
     def update(self, instance, validated_data):
+        invited = validated_data.pop('invited_id', [])
         subevents_data = self.context['request'].data.get('sub_events', [])
         subevent_ids = [item.get('id') for item in subevents_data]
 
@@ -164,7 +165,6 @@ class EventSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
        
-        invited = validated_data.pop('invited_id', [])
         if invited:
             instance.invited.set(invited)
 
