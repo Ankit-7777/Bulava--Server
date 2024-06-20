@@ -28,7 +28,7 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
             return Event.objects.filter(Q(user=self.request.user) | Q(invited=self.request.user)).distinct()
     def list(self, request):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().order_by('-updated_at')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
