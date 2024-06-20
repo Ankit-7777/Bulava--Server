@@ -163,10 +163,10 @@ class EventSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        if 'invited_id' in self.context['request'].data:
-            invited = validated_data.pop('invited_id', [])
-            if invited is not None:
-                instance.invited.set(invited)
+       
+        invited = validated_data.pop('invited_id', [])
+        if invited:
+            instance.invited.set(invited)
 
         existing_subevents = SubEvent.objects.filter(event=instance)
         existing_subevents_ids = [subevent.id for subevent in existing_subevents]
