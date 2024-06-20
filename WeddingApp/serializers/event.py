@@ -79,9 +79,9 @@ def check_validation(additional_fields, errors):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    cover_image = serializers.PrimaryKeyRelatedField(queryset=CoverImage.objects.all() , write_only=True, required=False)
+    cover_image = serializers.PrimaryKeyRelatedField(queryset=CoverImage.objects.all(), write_only=True, required=False)
     cover_image_id = CoverImageSerializer(read_only=True)
-    event_category_id = serializers.PrimaryKeyRelatedField(queryset= Category.objects.all(), write_only=True, required=False)
+    event_category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True, required=False)
     event_category = CategorySerializer(read_only=True)
     additional_fields = serializers.JSONField(required=True)
     sub_events = SubEventSerializer(many=True, read_only=True, source='event')
@@ -157,16 +157,16 @@ class EventSerializer(serializers.ModelSerializer):
         return event
 
     def update(self, instance, validated_data):
-        invited = validated_data.pop('invited_id', [])
         subevents_data = self.context['request'].data.get('sub_events', [])
         subevent_ids = [item.get('id') for item in subevents_data]
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
-        if invited is not None:
-            instance.invited.set(invited)
+        if 'invited_id' in self.context['request'].data:
+            invited = validated_data.pop('invited_id', [])
+            if invited is not None:
+                instance.invited.set(invited)
 
         existing_subevents = SubEvent.objects.filter(event=instance)
         existing_subevents_ids = [subevent.id for subevent in existing_subevents]
