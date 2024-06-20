@@ -16,7 +16,18 @@ from rest_framework.exceptions import NotFound
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['id', 'email', 'full_name', 'phone', 'is_active', 'is_staff', 'is_superuser', 'created_at', 'updated_at', 'role']
+        fields = [
+            'id',
+            'email',
+            'full_name',
+            'phone',
+            'is_active',
+            'is_staff',
+            'is_superuser',
+            'created_at',
+            'updated_at',
+            'role'
+        ]
         read_only_fields = ['email', 'is_active', 'is_staff', 'is_superuser', 'created_at', 'updated_at']
  
 class UserRegistrationSerializer(serializers.ModelSerializer):

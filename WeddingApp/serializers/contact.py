@@ -5,7 +5,12 @@ from rest_framework.validators import ValidationError
 class ContactUsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactUs
-        fields = '__all__'
+        fields = [
+            'id',
+            'name',
+            'email',
+            'message',
+        ]
     
     def validate(self, data):
         errors = {}

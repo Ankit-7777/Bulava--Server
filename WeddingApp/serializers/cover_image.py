@@ -7,7 +7,11 @@ from rest_framework.validators import ValidationError
 class CoverImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverImage
-        fields = '__all__'
+        fields = [
+            'id',
+            'image',
+            'event_category',
+        ]
     
     def validate_image(self, value):
         """

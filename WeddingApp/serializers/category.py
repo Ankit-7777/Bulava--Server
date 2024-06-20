@@ -10,7 +10,12 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = [
+            'id',
+            'category_name',
+            'category_image',
+            'additional_fields',
+        ]
 
     def create(self, validated_data):
         additional_fields = validated_data.pop('additional_fields')

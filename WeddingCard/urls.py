@@ -28,7 +28,7 @@ urlpatterns = [
     path('', include('WeddingApp.urls')),
     path('auth/', include('rest_framework.urls')),
     path('', include(router.urls)),
-    
+    path('get_random_banner_image/', views.get_random_banner_image, name='get_random_banner_image'),
     path('birthday/', views.birthday, name='birthday'),
     path('inaugurations/', views.inaugrations, name='inaugrations'),
     path('wedding/', views.wedding, name='wedding'),

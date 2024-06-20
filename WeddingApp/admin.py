@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs,Device, AppConfig, SubEvent
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs,Device, AppConfig, SubEvent, BannerImage
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -98,3 +98,4 @@ class ContactUsAdmin(admin.ModelAdmin):
     ordering = ('name',)
 
 admin.site.register(AppConfig)
+admin.site.register(BannerImage)
