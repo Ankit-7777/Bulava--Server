@@ -19,6 +19,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsSuperuserOrReadOnly]
 
+    def list(self,request):
+        sub_category = request.query_params.get('sub_category')
+        if sub_category == 'True':
+            queryset = self.queryset.filter(sub_category=True)
+        elif sub_category  == 'False':
+            queryset = self.queryset.filter(sub_category=False)
+        else:
+            queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
