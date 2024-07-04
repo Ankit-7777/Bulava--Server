@@ -76,7 +76,7 @@ p {
 /* Banner */
 .main-banner {
     /* background-image: url(../images/event-08.jpg); */
-    background-image: url("{{ banner.image.url }}");
+    /* background-image: url("{{ banner.image.url }}"); */
 
     background-position:  top, center;
     background-size: cover;

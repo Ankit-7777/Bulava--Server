@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs,Device, AppConfig, SubEvent, BannerImage
+from .models import UserProfile, Event,  Guest, RSVP, Vendor, Category,CoverImage,ContactUs,Device, AppConfig, SubEvent, BannerImage, UserEvent, Group
 from django.contrib.auth.admin import UserAdmin
 
 @admin.register(UserProfile)
@@ -41,14 +41,14 @@ class CoverImageAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'event_category', 'user', 'is_published','is_seen', 'created_at', 'updated_at')
+    list_display = ('id','event_id', 'event_category', 'user', 'is_published','is_seen', 'created_at', 'updated_at')
     list_filter = ('event_category', 'user', 'is_published', 'is_seen')
     search_fields = ('event_category__name', 'user__username')
     readonly_fields = ('created_at', 'updated_at')
 
     fieldsets = (
         (None, {
-            'fields': ('event_category', 'user','cover_image_id','image', 'additional_fields', 'is_published','invited', 'is_seen')
+            'fields': ('event_category','event_id', 'user','cover_image_id','image', 'additional_fields', 'is_published','invited', 'is_seen')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -99,3 +99,5 @@ class ContactUsAdmin(admin.ModelAdmin):
 
 admin.site.register(AppConfig)
 admin.site.register(BannerImage)
+admin.site.register(UserEvent)
+admin.site.register(Group)
