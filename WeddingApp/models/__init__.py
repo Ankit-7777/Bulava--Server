@@ -10,3 +10,6 @@ from .device import Device
 from .app_config import AppConfig
 from .sub_event import SubEvent
 from .banner import BannerImage
+from .user_event import UserEvent
+from .base import BaseModel
+from .group import Group
