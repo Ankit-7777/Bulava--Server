@@ -12,4 +12,4 @@ class UserEvent(BaseModel):
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='ignored')
 
     def __str__(self):
-        return f"{self.guest.full_name} - {self.event.name} - {self.status}"
+        return f"{self.guest.full_name} - {self.event.event_category} - {self.status}"

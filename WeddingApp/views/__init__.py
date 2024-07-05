@@ -7,3 +7,4 @@ from .contact import ContectUsViewSet
 from .app_config import AppConfigViewSet
 from .pdf import GenerateEventCardPdf
 from .render import index, birthday, inaugrations, custom, wedding, get_random_banner_image
+from .user_event import UserEventViewSet
