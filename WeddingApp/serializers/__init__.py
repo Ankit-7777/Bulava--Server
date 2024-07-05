@@ -5,3 +5,4 @@ from .event import EventSerializer, SubEventSerializer
 from .contact import ContactUsSerializer
 from .device import DeviceSerializer
 from .app_config import AppConfigSerializer
+from .user_event import UserEventSerializer

@@ -97,7 +97,38 @@ class ContactUsAdmin(admin.ModelAdmin):
     search_fields = ('name', 'email','message')
     ordering = ('name',)
 
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'event', 'member', 'is_active')
+    list_filter = ('event', 'is_active')
+    search_fields = ('name', 'event__event_id')
+    ordering = ('name',)
+    readonly_fields =('created_at', 'updated_at')
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'event', 'is_active','member')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+@admin.register(UserEvent)
+class UserEventAdmin(admin.ModelAdmin):
+    list_display = ('id', 'event', 'guest', 'status')
+    list_filter = ('event', 'status')
+    search_fields = ('event__event_id', 'guest__full_name')
+    ordering = ('-id',)
+    readonly_fields =('created_at', 'updated_at')
+    fieldsets = (
+        (None, {
+            'fields': ('event', 'guest', 'status')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
 admin.site.register(AppConfig)
 admin.site.register(BannerImage)
-admin.site.register(UserEvent)
-admin.site.register(Group)

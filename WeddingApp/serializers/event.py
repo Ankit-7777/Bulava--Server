@@ -92,6 +92,7 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = [
             'id',
+            'event_id',
             'image',
             'cover_image',
             'cover_image_id',
@@ -109,7 +110,7 @@ class EventSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'event_id']
     
     def to_internal_value(self, data):
         data = super().to_internal_value(data)

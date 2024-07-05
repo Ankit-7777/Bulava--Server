@@ -8,6 +8,7 @@ from WeddingApp.views import (
     ContectUsViewSet,
     AppConfigViewSet,
     SubEventViewSet,
+    UserEventViewSet,
 )
 from WeddingApp import views
 
@@ -19,6 +20,7 @@ router.register(r'events', EventViewSet, basename='events')
 router.register(r'contact-us', ContectUsViewSet, basename='contact-us')
 router.register(r'app_config', AppConfigViewSet, basename='app_config')
 router.register(r'subevents', SubEventViewSet, basename='subevent')
+router.register(r'user-events', UserEventViewSet)
 
 
 urlpatterns = [
