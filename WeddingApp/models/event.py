@@ -19,7 +19,7 @@ class Event(models.Model):
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
     is_seen = models.BooleanField(default=False)
     def __str__(self):
-        return f"{self.event_category}"
+        return f"{self.event_category}_{self.id}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

@@ -53,18 +53,32 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return UserProfile.objects.create_user(**validated_data)
 
 class UserLoginSerializer(serializers.ModelSerializer):
-    email=serializers.EmailField(max_length=255)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    confirm_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
     class Meta:
         model = UserProfile
-        fields = ['email','password']
-    
-    def validate(self,attrs):
-     
-        email=attrs.get('email')
-        user=UserProfile.objects.filter(email=email)        
-        if  not user.exists():
-                    raise serializers.ValidationError({'email':'The email is not valid'})
+        fields = ['email', 'password', 'confirm_password']
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+        confirm_password = attrs.get('confirm_password')
+        pattern = r"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$"
+
+        if password != confirm_password:
+            raise serializers.ValidationError("Password and Confirm Password Must Be Same")
+        if not re.match(pattern, password):
+            raise serializers.ValidationError("Password must contain at least eight characters with a digit, an uppercase letter, a lowercase letter, and a special character")
+
         return attrs
+
+    def create(self, validated_data):
+        email = validated_data.get('email')
+        password = validated_data.get('password')
+        return UserProfile.objects.create_user(email=email, password=password)
+
 
 class UserChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
@@ -142,22 +156,27 @@ class UserPasswordResetSerializer(serializers.Serializer):
             raise ValidationError('Token is not Valid or Expired')
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=False)
+    full_name = serializers.CharField(required=True)
+    image = serializers.ImageField(required=True)
+    phone = serializers.CharField(required=True)
+    dob = serializers.DateField(required=True)
 
     class Meta:
         model = UserProfile
-        fields = ['full_name', 'email', 'phone', 'role', 'password']
+        fields = ['full_name', 'image', 'phone', 'dob', 'occasion', 'role']
+
+
+    def validate(self, attrs):
+        required_fields = ['full_name', 'image', 'phone', 'dob']
+        missing_fields = [field for field in required_fields if field not in attrs]
+        if missing_fields:
+            raise serializers.ValidationError({field: f"{field} is required." for field in missing_fields})
+        return attrs
 
     def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
-        
-        # Check if the instance exists
-        if not instance:
-            raise NotFound("User not found")
-
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        if password:
-            instance.set_password(password)
         instance.save()
         return instance
+
+

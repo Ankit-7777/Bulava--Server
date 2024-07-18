@@ -2,7 +2,7 @@
 # from asgiref.sync import async_to_sync
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from WeddingApp.models import Event, Group
+from WeddingApp.models import Event, Group, UserEvent
 
 # @receiver(post_save, sender=Event)
 # def send_event_notification(sender, instance, created, **kwargs):
@@ -26,5 +26,19 @@ from WeddingApp.models import Event, Group
 @receiver(post_save, sender=Event)
 def create_group_for_event(sender, instance, created, **kwargs):
     if created:
-        group_name = f"{instance.event_category.category_name} Group"
-        Group.objects.create(name=group_name, event=instance, member=instance.user, is_active=True)
+        group_name = f"{instance.event_category.category_name} Group_{instance.id}"
+        group = Group.objects.create(name=group_name, event=instance, owner=instance.user, is_active=True)
+        group.member.add(instance.user)
+
+
+@receiver(post_save, sender=UserEvent)
+def add_guest_to_group(sender, instance, **kwargs):
+    if instance.status == 'accepted':
+        try:
+            group = Group.objects.get(event=instance.event)
+            group.member.add(instance.guest)
+            group.save()
+        except Group.DoesNotExist:
+            pass
+
+
