@@ -37,6 +37,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(_("Full Name"), max_length=255)
     image = models.ImageField(_("Image"),upload_to='ProfileImages/', blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp'])])
     phone = models.CharField(_("Phone"), max_length=10)
+    dob = models.DateField(_("Date of Birth"), blank=True, null=True)
+    occasion = models.CharField(_("Occasion"), max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

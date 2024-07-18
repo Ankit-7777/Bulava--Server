@@ -84,14 +84,27 @@ class UserLoginView(APIView):
             password = serializer.validated_data.get('password')
             try:
                 user = UserProfile.objects.get(email=email)
+                if check_password(password, user.password):
+                    token = get_tokens_for_user(user)
+                    user_serializer = UserProfileSerializer(user)
+                    headers = request.headers
+                    device_id = headers.get('Device-Token')
+                    device_token = headers.get('Token')
+                    device_type = headers.get('Type')
+
+                    if device_id and device_token and device_type:
+                        Device.objects.get_or_create(
+                            device_id=device_id,
+                            type=device_type,
+                            token=device_token,
+                            user=user
+                        )
+                    return Response({'message': 'Login successful', 'token': token, 'user_detail': user_serializer.data}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': {'non_field_errors': ['Email or Password is Not Valid']}}, status=status.HTTP_400_BAD_REQUEST)
             except UserProfile.DoesNotExist:
-                return Response({'error': {'non_field_errors': ['Email or Password is Not Valid']}}, status=status.HTTP_400_BAD_REQUEST)
-
-            if check_password(password, user.password):
-                user_serializer = UserProfileSerializer(user)
+                user = serializer.save()
                 token = get_tokens_for_user(user)
-
-                # Handle device-specific information
                 headers = request.headers
                 device_id = headers.get('Device-Token')
                 device_token = headers.get('Token')
@@ -104,10 +117,7 @@ class UserLoginView(APIView):
                         token=device_token,
                         user=user
                     )
-
-                return Response({'token': token, 'user_detail': user_serializer.data}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': {'non_field_errors': ['Email or Password is Not Valid']}}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Registration successful. Please proceed to complete your profile.', 'token': token, 'user_detail': UserProfileSerializer(user).data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 class LogoutUserView(APIView):
@@ -124,28 +134,24 @@ class LogoutUserView(APIView):
         return Response({'message': 'Log out Successfully.'}, status=status.HTTP_200_OK)
 
 class UserUpdateView(APIView):
-    renderer_classes=[UserProfileRenderer]
+    renderer_classes = [UserProfileRenderer]
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def get_object(self):
-        user = self.request.user # Accessing the user associated with the token
+        user = self.request.user
         if not user:
             raise NotFound("User not found")
         return user
 
-    def put(self, request, format=None):
+    def patch(self, request, format=None):
         user = self.get_object()
-
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            updated_data = serializer.data  # Retrieve updated data
-            return Response({
-                'message': 'User profile updated successfully',
-                'user_detail': updated_data
-            })
-        return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserChangePasswordView(APIView):
     renderer_classes=[UserProfileRenderer]

@@ -12,7 +12,7 @@ class UserProfileAdmin(UserAdmin):
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('full_name', 'phone','image')}),
+        ('Personal Info', {'fields': ('full_name', 'phone','image', 'dob', 'occasion')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('created_at', 'updated_at')}),
     )
@@ -99,7 +99,7 @@ class ContactUsAdmin(admin.ModelAdmin):
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'event', 'member', 'is_active')
+    list_display = ('id', 'name', 'owner', 'event', 'is_active')
     list_filter = ('event', 'is_active')
     search_fields = ('name', 'event__event_id')
     ordering = ('name',)
