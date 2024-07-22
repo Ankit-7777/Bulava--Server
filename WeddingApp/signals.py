@@ -38,6 +38,8 @@ def add_guest_to_group(sender, instance, **kwargs):
             group = Group.objects.get(event=instance.event)
             group.member.add(instance.guest)
             group.save()
+            instance.event.invited.add(instance.guest)
+            instance.event.save()
         except Group.DoesNotExist:
             pass
 

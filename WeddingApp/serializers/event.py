@@ -104,7 +104,7 @@ class EventSerializer(serializers.ModelSerializer):
             'event_category_id',
             'sub_events',
             'additional_fields',
-            'is_published',
+            'is_private',
             'is_seen',
             'event_date',
             'created_at',
@@ -125,19 +125,21 @@ class EventSerializer(serializers.ModelSerializer):
         additional_fields = attrs.get('additional_fields', [])
         if additional_fields:
             errors = check_validation(additional_fields, errors)
-
         created_at = attrs.get('created_at')
         event_date = attrs.get('event_date')
         event_category = attrs.get('event_category')
-
         if event_date and event_date < timezone.now().date():
             errors.append({'event_date': 'Event date cannot be a past date.'})
-
         if event_category and 'wedding' in event_category.category_name.lower():
             role = attrs.get('role')
             if not role:
                 errors.append({'role': 'Role is required for events in the Wedding category.'})
-    
+        request = self.context.get('request')
+        if request and request.user:
+            if attrs.get('user') != request.user:
+                errors.append({'user': 'The user must be the currently logged-in user.'})
+        else:
+            errors.append({'user': 'User must be authenticated.'})
         if any([True for error in errors if error]):
             raise serializers.ValidationError({'data': errors})
         return attrs
@@ -161,17 +163,13 @@ class EventSerializer(serializers.ModelSerializer):
         invited = validated_data.pop('invited_id', [])
         subevents_data = self.context['request'].data.get('sub_events', [])
         subevent_ids = [item.get('id') for item in subevents_data]
-
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-       
         if invited:
             instance.invited.set(invited)
-
         existing_subevents = SubEvent.objects.filter(event=instance)
         existing_subevents_ids = [subevent.id for subevent in existing_subevents]
-
         for subevent_data in subevents_data:
             subevent_id = subevent_data.get('id')
             category_id = subevent_data.pop('category')
@@ -190,11 +188,9 @@ class EventSerializer(serializers.ModelSerializer):
                     image=subevent_data.get('image'),
                     additional_fields=subevent_data.get('additional_fields', {})
                 )
-
         for subevent_id in existing_subevents_ids:
             if subevent_id not in subevent_ids:
                 SubEvent.objects.get(id=subevent_id).delete()
-
         return instance
 
 

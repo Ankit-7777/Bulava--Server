@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from WeddingApp.models import Event
-from WeddingApp.permissions import IsSuperuserOrReadOnly,IsEventOwner
+from WeddingApp.permissions import IsSuperuserOrReadOnly,EventPermission
 from WeddingApp.serializers import EventSerializer
 from WeddingApp.pagination import MyPageNumberPagination
 from WeddingApp.models import Category
@@ -16,17 +16,26 @@ from django.db.models import Q
 class EventViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
     pagination_class = MyPageNumberPagination
-    permission_classes = [IsEventOwner]
+    permission_classes = [EventPermission]
     authentication_classes = [JWTAuthentication]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    
-    # def get_queryset(self):
-    #     if not self.request.user.is_superuser:
-    #         return Event.objects.filter(user=self.request.user)
-    #     return super().get_queryset()
+
     def get_queryset(self):
-            return Event.objects.filter(Q(user=self.request.user) | Q(invited=self.request.user)).distinct()
+        return Event.objects.filter(Q(user=self.request.user) | Q(invited=self.request.user) | Q(is_private=False)).distinct()
+
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     if user.is_authenticated:
+    #         queryset = Event.objects.filter(
+    #             Q(is_private=False) | 
+    #             Q(is_private=True, user=user) |
+    #             Q(is_private=True, invited=user)
+    #         ).distinct()
+    #     else:
+    #         queryset = Event.objects.filter(is_private=False).distinct()
+    #     return queryset
+
     def list(self, request):
         queryset = self.get_queryset().order_by('-updated_at')
         page = self.paginate_queryset(queryset)
@@ -68,17 +77,14 @@ class EventViewSet(viewsets.ModelViewSet):
         except Event.DoesNotExist:
             return Response({"Event": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
     
-    # New method for getting events by category
     @action(detail=False, methods=['get'], url_path='get-events-for-category')
     def get_events_for_category(self, request, category_id):
         try:
             category = Category.objects.get(pk=category_id)
         except Category.DoesNotExist:
             return JsonResponse({"error": "Category not found"}, status=404)
-
         events = Event.objects.filter(event_category_id=category_id)
         serializer = EventSerializer(events, many=True)
-
         if events.exists():
             return JsonResponse({"message": "Events retrieved successfully", "event_detail": serializer.data}, status=200)
         else:

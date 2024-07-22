@@ -8,7 +8,7 @@ class UserProfileAdmin(UserAdmin):
     list_display = ( 'id','full_name', 'email',  'phone', 'is_staff', 'is_active','is_superuser')
     search_fields = ('email', 'full_name')
     readonly_fields = ('created_at', 'updated_at')
-    ordering = ('email',) 
+    ordering = ('email',)
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
@@ -41,14 +41,14 @@ class CoverImageAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id','event_id', 'event_category', 'user', 'is_published','is_seen', 'created_at', 'updated_at')
-    list_filter = ('event_category', 'user', 'is_published', 'is_seen')
+    list_display = ('id','event_id', 'event_category', 'user', 'is_private','is_seen', 'created_at', 'updated_at')
+    list_filter = ('event_category', 'user', 'is_private', 'is_seen')
     search_fields = ('event_category__name', 'user__username')
     readonly_fields = ('created_at', 'updated_at')
 
     fieldsets = (
         (None, {
-            'fields': ('event_category','event_id', 'user','cover_image_id','image', 'additional_fields', 'is_published','invited', 'is_seen')
+            'fields': ('event_category','event_id', 'user','cover_image_id','image', 'additional_fields', 'is_private','invited', 'is_seen')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),

@@ -13,7 +13,7 @@ class Event(models.Model):
     additional_fields = models.JSONField(_("Fields"), null=False, default = dict())
     event_date = models.DateField(_("date"), null=True, blank=True)
     role = models.CharField(_("role"), max_length=100, blank=True, null=True)
-    is_published = models.BooleanField(_("Is Published"), default=False)
+    is_private = models.BooleanField(_("Private Event"), default=False)
     invited = models.ManyToManyField('UserProfile', related_name='shared_events', blank=True)
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
