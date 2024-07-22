@@ -17,20 +17,27 @@ class IsSuperuserOrReadOnly(BasePermission):
                 return True
         return False
 
+
 class EventPermission(BasePermission):
     def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            raise PermissionDenied(detail="Authentication credentials were not provided.")
-        if request.method in SAFE_METHODS:
-            return True
-        return True
+        try:
+            if request.user and request.user.is_authenticated:
+                if request.method in SAFE_METHODS:
+                    return True
+            return False
+        except ObjectDoesNotExist:
+            return False
 
     def has_object_permission(self, request, view, obj):
-        if not request.user or not request.user.is_authenticated:
-            raise PermissionDenied(detail="Authentication credentials were not provided.")
-        if request.method in SAFE_METHODS:
-            if not obj.is_private:
-                return True
-            return obj.user == request.user or obj.invited.filter(id=request.user.id).exists()
-        return obj.user == request.user
-
+        try:
+            if request.user and request.user.is_authenticated:
+                if request.method in SAFE_METHODS:
+                    if not obj.is_private:
+                        return True
+                    elif obj.user == request.user or obj.invited.filter(id=request.user.id).exists():
+                        return True
+                if obj.user == request.user:
+                    return True
+            return False
+        except ObjectDoesNotExist:
+            return False
