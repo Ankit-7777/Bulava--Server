@@ -1,6 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from WeddingApp.models import Event
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.exceptions import PermissionDenied
 
 class IsSuperuserOrReadOnly(BasePermission):
     """
@@ -18,16 +19,18 @@ class IsSuperuserOrReadOnly(BasePermission):
 
 class EventPermission(BasePermission):
     def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            raise PermissionDenied(detail="Authentication credentials were not provided.")
         if request.method in SAFE_METHODS:
             return True
-        return request.user and request.user.is_authenticated
+        return True
 
     def has_object_permission(self, request, view, obj):
+        if not request.user or not request.user.is_authenticated:
+            raise PermissionDenied(detail="Authentication credentials were not provided.")
         if request.method in SAFE_METHODS:
             if not obj.is_private:
                 return True
-            if request.user and request.user.is_authenticated:
-                return obj.user == request.user or obj.invited.filter(id=request.user.id).exists()
-            return False
+            return obj.user == request.user or obj.invited.filter(id=request.user.id).exists()
         return obj.user == request.user
 
