@@ -21,7 +21,6 @@ from django.core.mail import send_mail
 from WeddingApp.serializers import (
     UserProfileSerializer,
     UserRegistrationSerializer,
-    UserLoginSerializer,
     UserUpdateSerializer,
     UserChangePasswordSerializer,
     SendPasswordResetEmailSerializer,
@@ -78,47 +77,54 @@ class UserLoginView(APIView):
     renderer_classes = [UserProfileRenderer]
 
     def post(self, request, format=None):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            email = serializer.validated_data.get('email')
-            password = serializer.validated_data.get('password')
-            try:
-                user = UserProfile.objects.get(email=email)
-                if check_password(password, user.password):
-                    token = get_tokens_for_user(user)
-                    user_serializer = UserProfileSerializer(user)
-                    headers = request.headers
-                    device_id = headers.get('Device-Token')
-                    device_token = headers.get('Token')
-                    device_type = headers.get('Type')
+        action = request.query_params.get('action')
 
-                    if device_id and device_token and device_type:
-                        Device.objects.get_or_create(
-                            device_id=device_id,
-                            type=device_type,
-                            token=device_token,
-                            user=user
-                        )
-                    return Response({'message': 'Login successful', 'token': token, 'user_detail': user_serializer.data}, status=status.HTTP_200_OK)
-                else:
-                    return Response({'error': {'non_field_errors': ['Email or Password is Not Valid']}}, status=status.HTTP_400_BAD_REQUEST)
-            except UserProfile.DoesNotExist:
-                user = serializer.save()
+        if action == 'login':
+            return self.handle_login(request)
+        elif action == 'register':
+            return self.handle_register(request)
+        else:
+            return Response({'error': "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def handle_login(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        if not email or not password:
+            return Response({'error': "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = UserProfile.objects.get(email=email)
+            if check_password(password, user.password):
                 token = get_tokens_for_user(user)
-                headers = request.headers
-                device_id = headers.get('Device-Token')
-                device_token = headers.get('Token')
-                device_type = headers.get('Type')
+                self.handle_device_info(request, user)
+                return Response({'message': 'Login successful', 'token': token}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': {'non_field_errors': ['Email or Password is not valid']}}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        except UserProfile.DoesNotExist:
+            return Response({'error': {'non_field_errors': ['Email is not registered']}}, status=status.HTTP_400_BAD_REQUEST)
 
-                if device_id and device_token and device_type:
-                    Device.objects.get_or_create(
-                        device_id=device_id,
-                        type=device_type,
-                        token=device_token,
-                        user=user
-                    )
-                return Response({'message': 'Registration successful. Please proceed to complete your profile.', 'token': token, 'user_detail': UserProfileSerializer(user).data}, status=status.HTTP_201_CREATED)
+    def handle_register(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.save()
+            token = get_tokens_for_user(user)
+            self.handle_device_info(request, user)
+            return Response({'message': 'Registration successful. Please proceed to complete your profile.', 'token': token, 'user_detail': UserProfileSerializer(user).data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def handle_device_info(self, request, user):
+        headers = request.headers
+        device_id = headers.get('Device-Token')
+        device_token = headers.get('Token')
+        device_type = headers.get('Type')
+
+        if device_id and device_token and device_type:
+            Device.objects.get_or_create(
+                device_id=device_id,
+                type=device_type,
+                token=device_token,
+                user=user
+            )
 
 class LogoutUserView(APIView):
     renderer_classes = [UserProfileRenderer]
@@ -150,7 +156,7 @@ class UserUpdateView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class UserChangePasswordView(APIView):
