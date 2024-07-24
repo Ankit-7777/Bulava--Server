@@ -171,6 +171,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         missing_fields = [field for field in required_fields if field not in attrs]
         if missing_fields:
             raise serializers.ValidationError({field: f"{field} is required." for field in missing_fields})
+        phone = attrs.get('phone')
+        if phone:
+            if UserProfile.objects.filter(phone=phone).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError({'phone': 'This phone number is already in use.'})
+        
         return attrs
 
     def update(self, instance, validated_data):

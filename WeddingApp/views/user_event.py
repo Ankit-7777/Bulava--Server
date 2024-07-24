@@ -5,6 +5,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from WeddingApp.models import UserEvent
 from WeddingApp.serializers import UserEventSerializer
 from WeddingApp.renderers import UserProfileRenderer
+from rest_framework.decorators import action
 
 class UserEventViewSet(viewsets.ModelViewSet):
     renderer_classes = [UserProfileRenderer]
@@ -44,3 +45,15 @@ class UserEventViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['patch'], url_path='change-status')
+    def change_status(self, request, pk=None):
+        event = self.get_object()
+        status_value = request.data.get('status')
+        valid_status_choices = [choice[0] for choice in UserEvent.STATUS_CHOICES]
+        if status_value not in valid_status_choices:
+            return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+        event.status = status_value
+        event.save()
+        serializer = self.get_serializer(event)
+        return Response(serializer.data, status=status.HTTP_200_OK)

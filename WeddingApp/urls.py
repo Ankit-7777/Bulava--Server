@@ -2,7 +2,7 @@ from django.urls import path
 from WeddingApp.views import (
                             UserRegistrationView, UserLoginView,UserUpdateView,UserChangePasswordView,SendPasswordResetEmailView,
                             UserPasswordResetView,LogoutUserView,UserProfileView,
-                            CategoryViewSet,EventViewSet,CoverImageViewSet,GenerateEventCardPdf,SubEventViewSet
+                            CategoryViewSet,EventViewSet,CoverImageViewSet,GenerateEventCardPdf,SubEventViewSet,UserEventViewSet
 
                             )
 
@@ -40,6 +40,7 @@ urlpatterns = [
     path('subevents/search/', SubEventViewSet.as_view({'get': 'sub_event_search'})),
     path('subevents/get-subevents-for-events/<int:event_id>/', SubEventViewSet.as_view({'get': 'get_subevent_for_events'})),
     path('subevents/get-subevents-for-category/<int:category_id>/', SubEventViewSet.as_view({'get': 'get_subevents_for_category'})),
+    path('user-events/<int:pk>/change-status/', UserEventViewSet.as_view({'patch': 'change_status'}), name='user-event-change-status')
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

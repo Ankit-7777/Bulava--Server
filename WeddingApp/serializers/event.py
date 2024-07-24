@@ -79,14 +79,15 @@ def check_validation(additional_fields, errors):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    cover_image = serializers.PrimaryKeyRelatedField(queryset=CoverImage.objects.all(), write_only=True, required=False)
+    cover_image = serializers.PrimaryKeyRelatedField(queryset=CoverImage.objects.all(), write_only=True)
     cover_image_id = CoverImageSerializer(read_only=True)
-    event_category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True, required=False)
+    event_category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
     event_category = CategorySerializer(read_only=True)
     additional_fields = serializers.JSONField(required=True)
     sub_events = SubEventSerializer(many=True, read_only=True, source='event')
     invited_id = serializers.PrimaryKeyRelatedField(queryset=UserProfile.objects.all(), many=True, write_only=True, required=False)
     invited = UserProfileSerializer(read_only=True, many=True)
+    event_date = serializers.DateField(required=True)
 
     class Meta:
         model = Event
