@@ -29,6 +29,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'role'
         ]
         read_only_fields = ['email', 'is_active', 'is_staff', 'is_superuser', 'created_at', 'updated_at']
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
     class Meta:
@@ -52,21 +53,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
 
-class UserLoginSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    class Meta:
-        model = UserProfile
-        fields = ['email', 'password']
-    def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
-        if not UserProfile.objects.filter(email=email).exists():
-            raise serializers.ValidationError("Email is not registered.")
-        user = UserProfile.objects.get(email=email)
-        if not user.check_password(password):
-            raise serializers.ValidationError("Password is incorrect.")
-        return attrs
+
 
 class UserChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
