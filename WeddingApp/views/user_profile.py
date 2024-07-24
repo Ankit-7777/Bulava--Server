@@ -78,10 +78,12 @@ class UserLoginView(APIView):
     renderer_classes = [UserProfileRenderer]
 
     def post(self, request, format=None):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            email = serializer.validated_data.get('email')
-            password = serializer.validated_data.get('password')
+        action = request.query_params.get('action')
+        if action == 'login':
+            email = request.data.get('email')
+            password = request.data.get('password')
+            if not email or not password:
+                return Response({'error': "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST) 
             try:
                 user = UserProfile.objects.get(email=email)
                 if check_password(password, user.password):
@@ -101,8 +103,13 @@ class UserLoginView(APIView):
                         )
                     return Response({'message': 'Login successful', 'token': token, 'user_detail': user_serializer.data}, status=status.HTTP_200_OK)
                 else:
-                    return Response({'error': {'non_field_errors': ['Email or Password is Not Valid']}}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': {'non_field_errors': ['Email or Password is not valid']}}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
             except UserProfile.DoesNotExist:
+                return Response({'error': {'non_field_errors': ['Email is not registered']}}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif action == 'register':
+            serializer = UserRegistrationSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
                 user = serializer.save()
                 token = get_tokens_for_user(user)
                 headers = request.headers
@@ -117,8 +124,10 @@ class UserLoginView(APIView):
                         token=device_token,
                         user=user
                     )
-                return Response({'message': 'Registration successful. Please proceed to complete your profile.', 'token': token, 'user_detail': UserProfileSerializer(user).data}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                return Response({'message': 'Registration successful. Please proceed to complete your profile.', 'token': token, 'user_detail': UserProfileSerializer(user).data}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        
+        return Response({'error': "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutUserView(APIView):
     renderer_classes = [UserProfileRenderer]

@@ -29,56 +29,44 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'role'
         ]
         read_only_fields = ['email', 'is_active', 'is_staff', 'is_superuser', 'created_at', 'updated_at']
- 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    confirm_password=serializers.CharField(style={'input_type':'password'},write_only='True')
+    confirm_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
     class Meta:
-        model=UserProfile
-        fields= '__all__'
-        
-        extra_kwargs={
-            'password':{'write_only':True}
+        model = UserProfile
+        fields = ['email', 'password', 'confirm_password']
+        extra_kwargs = {
+            'password': {'write_only': True}
         }
     def validate(self, attrs):
         password = attrs.get('password')
         confirm_password = attrs.get('confirm_password')
         pattern = r"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$"
         if password != confirm_password:
-            raise serializers.ValidationError("Password and Confirm Password Must Be Same")
+            raise serializers.ValidationError("Password and Confirm Password must be the same.")
         elif not re.match(pattern, password):
-            raise serializers.ValidationError("Password must contain at least eight characters with a digit, an uppercase letter, a lowercase letter, and a special character")
+            raise serializers.ValidationError("Password must contain at least eight characters with a digit, an uppercase letter, and a lowercase letter.")
         return attrs
-    
-    def create(self,validated_data):
-        return UserProfile.objects.create_user(**validated_data)
+    def create(self, validated_data):
+        return UserProfile.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
 
 class UserLoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    confirm_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-
     class Meta:
         model = UserProfile
-        fields = ['email', 'password', 'confirm_password']
-
+        fields = ['email', 'password']
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-        confirm_password = attrs.get('confirm_password')
-        pattern = r"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$"
-
-        if password != confirm_password:
-            raise serializers.ValidationError("Password and Confirm Password Must Be Same")
-        if not re.match(pattern, password):
-            raise serializers.ValidationError("Password must contain at least eight characters with a digit, an uppercase letter, a lowercase letter, and a special character")
-
+        if not UserProfile.objects.filter(email=email).exists():
+            raise serializers.ValidationError("Email is not registered.")
+        user = UserProfile.objects.get(email=email)
+        if not user.check_password(password):
+            raise serializers.ValidationError("Password is incorrect.")
         return attrs
-
-    def create(self, validated_data):
-        email = validated_data.get('email')
-        password = validated_data.get('password')
-        return UserProfile.objects.create_user(email=email, password=password)
-
 
 class UserChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
