@@ -58,7 +58,7 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(SubEvent)
 class SubEventCategoryAdmin(admin.ModelAdmin):
-    list_display = ('id','category','name','image')
+    list_display = ('id','category','name','image','date')
     list_filter = ('name','additional_fields','image')
     search_fields = ('category','event','name','additional_fields','image')
     ordering = ('name',)
