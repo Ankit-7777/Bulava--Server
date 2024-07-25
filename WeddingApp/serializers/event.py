@@ -151,6 +151,8 @@ class EventSerializer(serializers.ModelSerializer):
         event = Event.objects.create(**validated_data)
         subevent_instances = []
         for subevent_data in subevents_data:
+            if not subevent_data.get('date'):
+                raise serializers.ValidationError({'date': 'Date is required for subevents.'})
             category_id = subevent_data.pop('category')
             category = Category.objects.get(id=category_id)
             subevent_instance = SubEvent(event=event, category=category, **subevent_data)
@@ -185,6 +187,7 @@ class EventSerializer(serializers.ModelSerializer):
                 SubEvent.objects.create(
                     event=instance,
                     category=category,
+                    date = subevent_data.get('date'),
                     name=subevent_data.get('name'),
                     image=subevent_data.get('image'),
                     additional_fields=subevent_data.get('additional_fields', {})
